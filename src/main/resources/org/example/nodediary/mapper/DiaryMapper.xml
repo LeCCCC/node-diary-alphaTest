@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.nodediary.mapper.DiaryMapper">
+    <!-- 插入新日记 -->
+    <insert id="insert" parameterType="org.example.nodediary.pojo.Diary" useGeneratedKeys="true" keyProperty="id">
+        insert into diary (user_id, title, content, cover_image, visibility, updated_at,created_at)
+        values (#{userId}, #{title},#{content}, #{coverImage}, #{visibility}, #{updatedAt},#{createdAt})
+    </insert>
+    <!-- 更新日记 -->
+    <update id="updateById" parameterType="org.example.nodediary.pojo.Diary">
+        update diary
+        <set>
+            <if test="title != null">
+                title = #{title},
+            </if>
+            <if test="content != null">
+                content = #{content},
+            </if>
+            <if test="coverImage != null">
+                cover_image = #{coverImage},
+            </if>
+            <if test="visibility != null">
+                visibility = #{visibility},
+            </if>
+            updated_at = #{updatedAt}
+        </set>
+        where id = #{id}
+    </update>
+        <!-- 根据用户ID查询该用户分页日记列表 -->
+    <select id="selectPageByUserId" resultType="org.example.nodediary.pojo.Diary">
+        select id,
+        user_id,
+        title,
+        content,
+        cover_image,
+        visibility,
+        created_at,
+        updated_at
+        from diary
+        where user_id = #{userId}
+        order by created_at desc
+        limit #{offset}, #{pageSize}
+    </select>
+    <!-- 计算首页流数量 -->
+    <select id="countHomeFeed" resultType="java.lang.Long">
+        select count(*)
+        from diary
+        where user_id = #{currentUserId}
+        or (user_id = #{matchedUserId} and visibility = 1)
+    </select>
+    <!--查询首页分流列表-->
+    <select id="selectHomeFeed" resultType="org.example.nodediary.pojo.Diary">
+        select id,
+        user_id,
+        title,
+        content,
+        cover_image,
+        visibility,
+        created_at,
+        updated_at
+        from diary
+        where user_id = #{currentUserId}
+        or (user_id = #{matchedUserId} and visibility = 1)
+        order by created_at desc
+        limit #{offset}, #{pageSize}
+    </select>
+</mapper>
