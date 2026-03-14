@@ -24,6 +24,7 @@ public class DiaryServiceImp implements DiaryService {
     private MatchService matchService;
     @Autowired
     private MatchMapper matchMapper;
+
     //创建新日记
     @Override
     public Long createDiary(DiaryCreateDto dto) {
@@ -32,8 +33,11 @@ public class DiaryServiceImp implements DiaryService {
             throw new BusinessException("标题不能为空");
         } else if (dto.getContent() == null || dto.getContent().trim().isEmpty()) {
             throw new BusinessException("内容不能为空");
+        } else if (dto.getVisibility() == null || (dto.getVisibility() != 0 && dto.getVisibility() != 1)) {
+            throw new BusinessException("可见范围参数非法");
+        } else if (dto.getVisibility() == null || (dto.getVisibility() != 0 && dto.getVisibility() != 1)) {
+            throw new BusinessException("可见范围参数非法");
         }
-
         Diary diary = new Diary();
         // 从当前登录上下文中取用户 id
         diary.setUserId(BaseContext.getCurrentId());
@@ -89,12 +93,19 @@ public class DiaryServiceImp implements DiaryService {
         // 从数据库删除
         diaryMapper.deleteById(id);
     }
+
     //获取用户日记列表
     @Override
     public PageResult<DiaryListItemVO> getMyDiaryList(Integer pageNum, Integer pageSize) {
         //获取用户ID
         Integer userId = BaseContext.getCurrentId();
         //设置查询起始位置，公式为（当前页码 - 1）* 每页条数
+        if (pageNum == null || pageNum < 1) {
+            pageNum = 1;
+        }
+        if (pageSize == null || pageSize < 1) {
+            pageSize = 10;
+        }
         int offset = (pageNum - 1) * pageSize;
         //计算该用户总记录数
         Long total = diaryMapper.countByUserId(userId);
@@ -117,6 +128,7 @@ public class DiaryServiceImp implements DiaryService {
 
         return new PageResult<>(total, records);
     }
+
     //获取日记详情
     @Override
     public DiaryDetailVO getDiaryDetail(Long id) {
@@ -196,6 +208,7 @@ public class DiaryServiceImp implements DiaryService {
             vo.setId(diary.getId());
             vo.setUserId(diary.getUserId());
             vo.setTitle(diary.getTitle());
+            vo.setVisibility(diary.getVisibility());
             vo.setCoverImage(diary.getCoverImage());
             vo.setCreatedAt(diary.getCreatedAt());
 

@@ -45,6 +45,8 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
             e.printStackTrace();
             Result error = Result.error("NOT_LOGIN");
             String notLogin = JSONObject.toJSONString(error);
+            res.setStatus(401);
+            res.setContentType("application/json;charset=UTF-8");
             res.getWriter().write(notLogin);
             return false;
         }
@@ -58,6 +60,8 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex) throws Exception {
+        // 移除 ThreadLocal 中的用户 id防止数据串行
+        BaseContext.removeCurrentId();
         HandlerInterceptor.super.afterCompletion(request, response, handler, ex);
     }
 }

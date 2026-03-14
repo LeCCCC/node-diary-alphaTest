@@ -69,29 +69,21 @@ public class MatchServiceImp implements MatchService {
     @Override
     public MatchDetailVO getMatchDetail() {
         Integer currentUserId = BaseContext.getCurrentId();
-
-        // 查询匹配关系
+        //查询匹配关系
         MatchRelation relation = matchMapper.selectRelationByUserId(currentUserId);
-
-        // 没有任何记录
-        if (relation == null) {
-            return new MatchDetailVO(false, null, null, null);
+        //判断是否匹配成功
+        if (relation == null || relation.getStatus() == 0) {
+            return new MatchDetailVO(false, null, null, null, null);
         }
-
-        // 还在匹配队列中
-        if (relation.getStatus() == 0) {
-            return new MatchDetailVO(false, null, null, null);
-        }
-
-        // 已匹配
+        //查询匹配用户信息
         Integer matchedUserId = relation.getMatchedUserId();
-
-        String nickname = userMapper.selectById(matchedUserId).getNickname();
+        User user = userMapper.selectById(matchedUserId);
 
         return new MatchDetailVO(
                 true,
                 matchedUserId,
-                nickname,
+                user.getNickname(),
+                user.getAvatarUrl(),
                 relation.getCreatedAt()
         );
     }

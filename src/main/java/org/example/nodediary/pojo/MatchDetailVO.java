@@ -13,5 +13,7 @@ public class MatchDetailVO {
     private Boolean matched;
     private Integer matchedUserId;
     private String matchedNickname;
+    private String avatarUrl;
     private LocalDateTime createdAt;
+
 }

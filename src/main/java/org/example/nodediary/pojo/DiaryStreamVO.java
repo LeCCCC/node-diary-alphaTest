@@ -15,5 +15,6 @@ public class DiaryStreamVO {
     private String title;
     private String summary;
     private String coverImage;
+    private Integer visibility;
     private LocalDateTime createdAt;
 }
