@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MatchDetailVO {
+    private Boolean inQueue;
     private Boolean matched;
     private Integer matchedUserId;
     private String matchedNickname;

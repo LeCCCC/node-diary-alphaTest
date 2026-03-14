@@ -72,14 +72,17 @@ public class MatchServiceImp implements MatchService {
         //查询匹配关系
         MatchRelation relation = matchMapper.selectRelationByUserId(currentUserId);
         //判断是否匹配成功
-        if (relation == null || relation.getStatus() == 0) {
-            return new MatchDetailVO(false, null, null, null, null);
+        if (relation == null  ) {
+            return new MatchDetailVO(false, null, null, null, null,null);
+        }else if(relation.getStatus() == 0){
+            return new MatchDetailVO(true, false, null, null, null,null);
         }
         //查询匹配用户信息
         Integer matchedUserId = relation.getMatchedUserId();
         User user = userMapper.selectById(matchedUserId);
 
         return new MatchDetailVO(
+                true,
                 true,
                 matchedUserId,
                 user.getNickname(),
@@ -88,7 +91,7 @@ public class MatchServiceImp implements MatchService {
         );
     }
 
-    //解除匹配
+    //解除匹配关系
     @Override
     @Transactional
     public void cancelMatch() {
@@ -105,5 +108,19 @@ public class MatchServiceImp implements MatchService {
         // 删除双方匹配记录
         matchMapper.deleteByUserId(currentUserId);
         matchMapper.deleteByUserId(matchedUserId);
+    }
+    //退出队列
+    @Override
+    public void quitQueue() {
+        Integer currentUserId = BaseContext.getCurrentId();
+        // 查询当前匹配关系
+        MatchRelation relation = matchMapper.selectRelationByUserId(currentUserId);
+
+        if (relation == null ) {
+            throw new BusinessException("当前没有加入匹配");
+        }
+
+        // 删除匹配队列记录
+        matchMapper.deleteByUserId(currentUserId);
     }
 }

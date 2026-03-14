@@ -8,7 +8,7 @@ spring:
 
   datasource:
     url: jdbc:mysql://localhost:3306/nodediary?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: root
+    username: nodediary
     password: Yyj20050204&
     driver-class-name: com.mysql.cj.jdbc.Driver
 
@@ -17,3 +17,4 @@ mybatis:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true
+

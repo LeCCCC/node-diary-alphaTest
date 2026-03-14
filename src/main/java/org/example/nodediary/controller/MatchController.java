@@ -24,10 +24,16 @@ public class MatchController {
         MatchDetailVO matchDetailVO = matchService.getMatchDetail();
         return Result.success("success",matchDetailVO);
     }
-    //删除匹配
+    //删除匹配关系
     @DeleteMapping("/current")
     public Result cancelMatch() {
         matchService.cancelMatch();
         return Result.success("解除匹配成功", null);
+    }
+    //退出匹配队列
+    @DeleteMapping("/queue")
+    public Result quitQueue() {
+        matchService.quitQueue();
+        return Result.success("退出匹配队列成功", null);
     }
 }

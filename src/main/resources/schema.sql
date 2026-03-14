@@ -1,0 +1,45 @@
+CREATE TABLE `user`  (
+                         `id` bigint NOT NULL AUTO_INCREMENT,
+                         `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '用户名',
+                         `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '密码',
+                         `nickname` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '昵称',
+                         `avatar_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '头像地址',
+                         `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                         `gender` smallint NULL DEFAULT 2 COMMENT '性别',
+                         PRIMARY KEY (`id`) USING BTREE,
+                         UNIQUE INDEX `username`(`username` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+CREATE TABLE `diary`  (
+                          `id` bigint NOT NULL AUTO_INCREMENT,
+                          `user_id` bigint NOT NULL COMMENT '用户id',
+                          `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '标题',
+                          `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '正文',
+                          `cover_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '缩略封面',
+                          `visibility` tinyint NULL DEFAULT 0 COMMENT '可见性: 0-私密, 1-公开',
+                          `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                          `updated_at` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+                          PRIMARY KEY (`id`) USING BTREE,
+                          INDEX `idx_user_id`(`user_id` ASC) USING BTREE,
+                          CONSTRAINT `fk_diary_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+CREATE TABLE `match_relation`  (
+                                   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+                                   `user_id` bigint NOT NULL COMMENT '发起用户ID',
+                                   `matched_user_id` bigint NULL DEFAULT NULL COMMENT '被匹配用户ID',
+                                   `status` tinyint NULL DEFAULT 1 COMMENT '匹配状态: 0-待处理, 1-已匹配, 2-已屏蔽',
+                                   `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '匹配时间',
+                                   PRIMARY KEY (`id`) USING BTREE,
+                                   UNIQUE INDEX `idx_user_match_pair`(`user_id` ASC, `matched_user_id` ASC) USING BTREE,
+                                   INDEX `idx_matched_user`(`matched_user_id` ASC) USING BTREE,
+                                   CONSTRAINT `fk_match_target` FOREIGN KEY (`matched_user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+                                   CONSTRAINT `fk_match_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '用户匹配关系表' ROW_FORMAT = Dynamic;
+
+SET FOREIGN_KEY_CHECKS = 1;
+

@@ -11,6 +11,8 @@ public interface MatchService {
     void joinMatch();
 
     MatchDetailVO getMatchDetail();
-
+    //取消匹配关系
     void cancelMatch();
+    //退出匹配队列
+    void quitQueue();
 }
