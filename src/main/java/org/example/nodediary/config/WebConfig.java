@@ -22,6 +22,6 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/user/login",
                         "/api/user/register"
                 ); // 不拦截
-        //testGit
+
     }
 }

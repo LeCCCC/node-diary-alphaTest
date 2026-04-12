@@ -46,7 +46,6 @@ public class UserController {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", userFromDB.getId());
         claims.put("username", userFromDB.getUsername());
-        // 生成 token
         String token = JwtUtils.generateJwt(claims);
         // 3. 封装返回 data
         UserInfo userInfo = new UserInfo(

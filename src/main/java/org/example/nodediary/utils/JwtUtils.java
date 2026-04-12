@@ -14,7 +14,7 @@ import java.util.Map;
 public class JwtUtils {
 
     private static final String SIGN_KEY = "LecyYangLecyYangLecyYangLecyYang";
-    private static final Long EXPIRE = 43200000L; // 12小时
+    private static final Long EXPIRE = 604800000L; // 7天
 
     private static final SecretKey KEY =
             Keys.hmacShaKeyFor(SIGN_KEY.getBytes(StandardCharsets.UTF_8));

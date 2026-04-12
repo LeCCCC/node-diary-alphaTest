@@ -28,7 +28,7 @@
         </set>
         where id = #{id}
     </update>
-        <!-- 根据用户ID查询该用户分页日记列表 -->
+    <!-- 根据用户ID查询该用户分页日记列表 -->
     <select id="selectPageByUserId" resultType="org.example.nodediary.pojo.Diary">
         select id,
         user_id,

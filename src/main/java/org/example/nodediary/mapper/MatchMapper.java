@@ -22,10 +22,11 @@ public interface MatchMapper {
                                @Param("matchedUserId") Integer matchedUserId);
     //查询最早进入队列的两个待匹配用户
     List<MatchRelation> selectTop2WaitingUsers();
-    //根据用户id查询匹配关系
+    //根据用户id查询匹配详情
     MatchRelation selectByUserId(Integer currentUserId);
-
+    //根据用户id查询匹配对象关系
     MatchRelation selectRelationByUserId(Integer currentUserId);
-
+    //根据用户id删除匹配关系
     void deleteByUserId(Integer currentUserId);
+
 }

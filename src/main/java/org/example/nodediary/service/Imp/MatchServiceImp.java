@@ -1,5 +1,6 @@
 package org.example.nodediary.service.Imp;
 
+import org.example.nodediary.annotation.ClearDiaryCache;
 import org.example.nodediary.exception.BusinessException;
 import org.example.nodediary.mapper.MatchMapper;
 import org.example.nodediary.mapper.UserMapper;
@@ -30,6 +31,7 @@ public class MatchServiceImp implements MatchService {
 
     //匹配
     @Transactional
+    @ClearDiaryCache
     @Override
     public void doMatch() {
         //while循环可以一直匹配直到用户数量不足以匹配
@@ -65,6 +67,7 @@ public class MatchServiceImp implements MatchService {
         //加入匹配队列
         matchMapper.insertMatchRelation(currentUserId);
     }
+
     //查询匹配详情
     @Override
     public MatchDetailVO getMatchDetail() {
@@ -93,6 +96,7 @@ public class MatchServiceImp implements MatchService {
 
     //解除匹配关系
     @Override
+    @ClearDiaryCache
     @Transactional
     public void cancelMatch() {
         Integer currentUserId = BaseContext.getCurrentId();
@@ -109,6 +113,7 @@ public class MatchServiceImp implements MatchService {
         matchMapper.deleteByUserId(currentUserId);
         matchMapper.deleteByUserId(matchedUserId);
     }
+
     //退出队列
     @Override
     public void quitQueue() {

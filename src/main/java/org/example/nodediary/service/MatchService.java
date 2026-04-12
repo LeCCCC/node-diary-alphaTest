@@ -15,4 +15,7 @@ public interface MatchService {
     void cancelMatch();
     //退出匹配队列
     void quitQueue();
+    
+
+
 }

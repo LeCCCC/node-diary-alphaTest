@@ -32,7 +32,7 @@
         order by created_at asc
         limit 2
     </select>
-    <!-- 根据用户id查询匹配关系 -->
+    <!-- 根据用户id查询匹配信息 -->
     <select id="selectByUserId" resultType="org.example.nodediary.pojo.MatchRelation">
         select id,
         user_id,
@@ -42,7 +42,7 @@
         from match_relation
         where user_id = #{userId}
     </select>
-        <!-- 根据用户id查询匹配关系 -->
+        <!-- 根据用户id查询匹配对象ID -->
     <select id="selectRelationByUserId" resultType="org.example.nodediary.pojo.MatchRelation">
         select matched_user_id,created_at,status
         from match_relation

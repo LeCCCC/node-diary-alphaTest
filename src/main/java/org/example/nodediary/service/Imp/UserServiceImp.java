@@ -82,7 +82,6 @@ public class UserServiceImp implements UserService {
             throw new BusinessException("用户不存在");
         }
 
-        // 可按需加校验
         if (user.getNickname() != null && user.getNickname().length() > 20) {
             throw new BusinessException("昵称长度不能超过20");
         }

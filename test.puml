@@ -1,0 +1,83 @@
+@startuml
+top to bottom direction
+skinparam defaultTextAlignment center
+skinparam rectangle {
+  BackgroundColor white
+  BorderColor black
+}
+skinparam shadowing false
+
+rectangle "匿名匹配日记系统" as System
+
+rectangle "用户模块" as UserModule
+rectangle "日记模块" as DiaryModule
+rectangle "匹配模块" as MatchModule
+rectangle "文件上传模块" as UploadModule
+
+System -down- UserModule
+System -down- DiaryModule
+System -down- MatchModule
+System -down- UploadModule
+
+rectangle "注册登录" as AuthModule
+rectangle "个人管理" as ProfileModule
+
+UserModule -down- AuthModule
+UserModule -down- ProfileModule
+
+rectangle "注册" as Register
+rectangle "登录" as Login
+rectangle "退出登录" as Logout
+rectangle "获取个人信息" as GetProfile
+rectangle "修改个人信息" as UpdateProfile
+
+AuthModule -down- Register
+AuthModule -down- Login
+AuthModule -down- Logout
+
+ProfileModule -down- GetProfile
+ProfileModule -down- UpdateProfile
+
+rectangle "日记管理" as DiaryManage
+rectangle "日记展示" as DiaryView
+
+DiaryModule -down- DiaryManage
+DiaryModule -down- DiaryView
+
+rectangle "创建日记" as CreateDiary
+rectangle "编辑日记" as EditDiary
+rectangle "删除日记" as DeleteDiary
+rectangle "查看我的日记列表" as MyDiaryList
+rectangle "查看日记详情" as DiaryDetail
+rectangle "查看首页日记流" as HomeFeed
+
+DiaryManage -down- CreateDiary
+DiaryManage -down- EditDiary
+DiaryManage -down- DeleteDiary
+DiaryManage -down- MyDiaryList
+
+DiaryView -down- DiaryDetail
+DiaryView -down- HomeFeed
+
+rectangle "匹配队列管理" as QueueManage
+rectangle "匹配关系管理" as RelationManage
+
+MatchModule -down- QueueManage
+MatchModule -down- RelationManage
+
+rectangle "加入匹配队列" as JoinQueue
+rectangle "退出匹配队列" as QuitQueue
+rectangle "查询匹配状态" as QueryMatch
+rectangle "解除匹配关系" as CancelMatch
+
+QueueManage -down- JoinQueue
+QueueManage -down- QuitQueue
+
+RelationManage -down- QueryMatch
+RelationManage -down- CancelMatch
+
+rectangle "图片上传" as UploadImage
+
+UploadModule -down- UploadImage
+
+@enduml
