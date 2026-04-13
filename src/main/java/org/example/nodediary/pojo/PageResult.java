@@ -11,5 +11,11 @@ import java.util.List;
 public class PageResult<T> {
     private Long total;
     private List<T> records;
+    private Integer pageNum;
+    private Integer pageSize;
 
+    public PageResult(Long total, List<T> records) {
+        this.total = total;
+        this.records = records;
+    }
 }

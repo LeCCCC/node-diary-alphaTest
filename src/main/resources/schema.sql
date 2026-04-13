@@ -28,6 +28,30 @@ CREATE TABLE `diary`  (
 
 SET FOREIGN_KEY_CHECKS = 1;
 
+CREATE TABLE `tree_hole` (
+    `tree_hole_id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '树洞id',
+    `user_id` BIGINT NOT NULL COMMENT '发布者id',
+    `content` TEXT NOT NULL COMMENT '树洞内容',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    INDEX `idx_user_id`(`user_id` ASC),
+    CONSTRAINT `fk_tree_hole_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='树洞表';
+
+CREATE TABLE `tree_hole_comment` (
+    `comment_id` BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '评论id',
+    `tree_hole_id` BIGINT NOT NULL COMMENT '树洞id',
+    `user_id` BIGINT NOT NULL COMMENT '评论发布者id',
+    `content` TEXT NOT NULL COMMENT '评论内容',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '评论发布时间',
+    INDEX `idx_tree_hole_id`(`tree_hole_id` ASC),
+    INDEX `idx_user_id`(`user_id` ASC),
+    CONSTRAINT `fk_tree_hole_comment_tree_hole` FOREIGN KEY (`tree_hole_id`) REFERENCES `tree_hole`(`tree_hole_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+    CONSTRAINT `fk_tree_hole_comment_user` FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='树洞评论表';
+
+SET FOREIGN_KEY_CHECKS = 1;
+
 CREATE TABLE `match_relation`  (
                                    `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
                                    `user_id` bigint NOT NULL COMMENT '发起用户ID',

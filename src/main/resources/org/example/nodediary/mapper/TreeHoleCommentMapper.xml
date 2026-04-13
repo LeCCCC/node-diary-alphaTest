@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.nodediary.mapper.TreeHoleCommentMapper">
+
+    <!-- 分页查询评论列表 -->
+    <select id="selectPage" resultType="org.example.nodediary.pojo.TreeHoleCommentVO">
+        select comment_id as commentId,
+               tree_hole_id as treeHoleId,
+               content,
+               create_time as createTime
+        from tree_hole_comment
+        where tree_hole_id = #{treeHoleId}
+        order by create_time asc
+        limit #{offset}, #{pageSize}
+    </select>
+
+    <!-- 查询评论总数 -->
+    <select id="countByTreeHoleId" resultType="java.lang.Long">
+        select count(*) from tree_hole_comment where tree_hole_id = #{treeHoleId}
+    </select>
+
+    <!-- 发表评论 -->
+    <insert id="insertComment" useGeneratedKeys="true" keyProperty="commentId">
+        insert into tree_hole_comment (tree_hole_id, user_id, content, create_time)
+        values (#{treeHoleId}, #{userId}, #{content}, now())
+    </insert>
+
+</mapper>

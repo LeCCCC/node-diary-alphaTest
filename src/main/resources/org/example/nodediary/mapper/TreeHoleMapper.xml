@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.nodediary.mapper.TreeHoleMapper">
+
+    <!-- 分页查询树洞列表 -->
+    <select id="selectPage" resultType="org.example.nodediary.pojo.TreeHoleVO">
+        select tree_hole_id as treeHoleId,
+               user_id as publisherId,
+               content,
+               content as summary,
+               create_time as createTime,
+               update_time as updateTime,
+               (select count(*) from tree_hole_comment where tree_hole_id = th.tree_hole_id) as commentCount
+        from tree_hole th
+        order by create_time desc
+        limit #{offset}, #{pageSize}
+    </select>
+
+    <!-- 查询树洞总数 -->
+    <select id="countAll" resultType="java.lang.Long">
+        select count(*) from tree_hole
+    </select>
+
+    <!-- 获取树洞的评论数 -->
+    <select id="selectCommentCount" resultType="java.lang.Integer">
+        select count(*) from tree_hole_comment where tree_hole_id = #{treeHoleId}
+    </select>
+
+    <!-- 发布树洞 -->
+    <insert id="insertTreeHole" useGeneratedKeys="true" keyProperty="treeHoleId">
+        insert into tree_hole (user_id, content, create_time, update_time)
+        values (#{userId}, #{content}, now(), now())
+    </insert>
+
+    <!-- 获取树洞详情 -->
+    <select id="selectById" resultType="org.example.nodediary.pojo.TreeHoleVO">
+        select tree_hole_id as treeHoleId,
+               user_id as publisherId,
+               content,
+               content as summary,
+               create_time as createTime,
+               update_time as updateTime,
+               (select count(*) from tree_hole_comment where tree_hole_id = th.tree_hole_id) as commentCount
+        from tree_hole th
+        where tree_hole_id = #{treeHoleId}
+    </select>
+
+    <!-- 修改树洞 -->
+    <update id="updateTreeHole">
+        update tree_hole
+        set content = #{content}, update_time = now()
+        where tree_hole_id = #{treeHoleId}
+    </update>
+
+    <!-- 删除树洞 -->
+    <delete id="deleteById">
+        delete from tree_hole where tree_hole_id = #{treeHoleId}
+    </delete>
+
+</mapper>
