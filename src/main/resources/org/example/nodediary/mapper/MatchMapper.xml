@@ -52,4 +52,10 @@
     <delete id="deleteByUserId">
         delete from match_relation where user_id = #{userId}
     </delete>
+    <delete id="deleteMatchedRelation">
+        delete from match_relation
+        where user_id = #{userId}
+        and matched_user_id = #{matchedUserId}
+        and status = 1
+    </delete>
 </mapper>

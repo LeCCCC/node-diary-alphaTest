@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
+import java.util.Objects;
 @Service
 public class MatchServiceImp implements MatchService {
     @Autowired
@@ -51,8 +51,13 @@ public class MatchServiceImp implements MatchService {
             Integer userId2 = user2.getUserId();
 
             // 3. 更新双方匹配关系
-            matchMapper.updateMatchedRelation(userId1, userId2);
-            matchMapper.updateMatchedRelation(userId2, userId1);
+            int updated1 = matchMapper.updateMatchedRelation(userId1, userId2);
+            int updated2 = matchMapper.updateMatchedRelation(userId2, userId1);
+            // 并发情况下可能出现一方状态已变化，避免产生单向脏关系
+            if (updated1 != 1 || updated2 != 1) {
+                matchMapper.deleteByUserId(userId1);
+                matchMapper.deleteByUserId(userId2);
+            }
         }
     }
 
@@ -110,8 +115,19 @@ public class MatchServiceImp implements MatchService {
         Integer matchedUserId = relation.getMatchedUserId();
 
         // 删除双方匹配记录
-        matchMapper.deleteByUserId(currentUserId);
-        matchMapper.deleteByUserId(matchedUserId);
+        // 只删除“彼此互指”的匹配关系，防止并发下误删新关系或遗留旧关系
+        int deleteCurrent = matchMapper.deleteMatchedRelation(currentUserId, matchedUserId);
+        int deleteMatched = matchMapper.deleteMatchedRelation(matchedUserId, currentUserId);
+
+        // 兜底：若发现脏数据（单向关系），清理当前用户记录，避免关系残留
+        if (deleteCurrent == 0 || deleteMatched == 0) {
+            matchMapper.deleteByUserId(currentUserId);
+            MatchRelation otherSideRelation = matchMapper.selectRelationByUserId(matchedUserId);
+            if (otherSideRelation != null
+                    && Objects.equals(otherSideRelation.getMatchedUserId(), currentUserId)) {
+                matchMapper.deleteByUserId(matchedUserId);
+            }
+        }
     }
 
     //退出队列

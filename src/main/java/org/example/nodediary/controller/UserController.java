@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.example.nodediary.pojo.*;
 
 import org.example.nodediary.service.UserService;
-;
+
 import org.example.nodediary.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,13 +19,20 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    //获取图形验证码
+    @GetMapping("/captcha")
+    public Result getCaptcha() {
+        CaptchaVO vo = userService.generateCaptcha();
+        return Result.success("success", vo);
+    }
+
     //注册用户
     @PostMapping("/register")
-    public Result register(@RequestBody User user) {
-        if (user == null) {
+    public Result register(@RequestBody RegisterDto dto) {
+        if (dto == null) {
             return Result.error("请求参数不能为空");
         }
-        Integer userId = userService.register(user);
+        Integer userId = userService.register(dto);
         Map<String, Integer> idClaim = new HashMap<>();
         idClaim.put("userId", userId);
         return Result.success("注册成功", idClaim);
@@ -102,6 +109,22 @@ public class UserController {
 
         return Result.success("更新成功");
     }
+
+    //修改密码
+    @PutMapping("/password")
+    public Result changePassword(@RequestBody ChangePasswordDto dto, HttpServletRequest request) {
+        if (dto == null) {
+            return Result.error("请求参数不能为空");
+        }
+        Claims claims = (Claims) request.getAttribute("claims");
+        if (claims == null) {
+            return Result.error("NOT_LOGIN");
+        }
+        Integer userId = Integer.valueOf(claims.get("id").toString());
+        userService.changePassword(userId, dto);
+        return Result.success("密码修改成功");
+    }
+
     //退出登录
     @PostMapping("/logout")
     public Result userLogOut() {

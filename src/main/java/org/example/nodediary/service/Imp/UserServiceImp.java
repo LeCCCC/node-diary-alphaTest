@@ -1,12 +1,17 @@
 package org.example.nodediary.service.Imp;
 
+import cn.hutool.captcha.CaptchaUtil;
+import cn.hutool.captcha.LineCaptcha;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.example.nodediary.exception.BusinessException;
 import org.example.nodediary.mapper.UserMapper;
 
-import org.example.nodediary.pojo.PageResult;
+import org.example.nodediary.pojo.CaptchaVO;
+import org.example.nodediary.pojo.ChangePasswordDto;
+import org.example.nodediary.pojo.RegisterDto;
 import org.example.nodediary.pojo.User;
 
 import org.example.nodediary.service.UserService;
@@ -22,29 +27,84 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class UserServiceImp implements UserService {
+
+    private static final String CAPTCHA_KEY_PREFIX = "captcha:register:";
+
     @Autowired
     private UserMapper userMapper;
     @Autowired
     private HashEcode hashEcode;
     @Autowired
     StringRedisTemplate stringRedisTemplate = new StringRedisTemplate();
+
+    //生成图形验证码
+    @Override
+    public CaptchaVO generateCaptcha() {
+        LineCaptcha captcha = CaptchaUtil.createLineCaptcha(130, 44, 4, 40);
+        String code = captcha.getCode();
+        String captchaId = IdUtil.simpleUUID();
+
+        stringRedisTemplate.opsForValue().set(
+                CAPTCHA_KEY_PREFIX + captchaId,
+                code.toLowerCase(),
+                2,
+                TimeUnit.MINUTES
+        );
+
+        return new CaptchaVO(captchaId, captcha.getImageBase64Data());
+    }
+
     //注册用户
     @Override
-    public Integer register(User user) {
-        //1.异常检测
-        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+    public Integer register(RegisterDto dto) {
+        //1.验证码校验
+        if (dto.getCaptchaId() == null || dto.getCaptchaId().trim().isEmpty()) {
+            throw new BusinessException("验证码不能为空");
+        }
+        if (dto.getCaptchaCode() == null || dto.getCaptchaCode().trim().isEmpty()) {
+            throw new BusinessException("验证码不能为空");
+        }
+        String redisKey = CAPTCHA_KEY_PREFIX + dto.getCaptchaId();
+        String realCode = stringRedisTemplate.opsForValue().get(redisKey);
+        if (realCode == null) {
+            throw new BusinessException("验证码已过期，请刷新后重试");
+        }
+        if (!realCode.equalsIgnoreCase(dto.getCaptchaCode().trim())) {
+            throw new BusinessException("验证码错误");
+        }
+        //验证码一次性使用
+        stringRedisTemplate.delete(redisKey);
+
+        //2.基础字段校验
+        if (dto.getUsername() == null || dto.getUsername().trim().isEmpty()) {
             throw new BusinessException("用户名不能为空");
-        } else if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+        }
+        if (dto.getPassword() == null || dto.getPassword().trim().isEmpty()) {
             throw new BusinessException("密码不能为空");
-        } else if (userMapper.selectByUsername(user.getUsername()) != null) {
-            throw new BusinessException("用户名已存在");
-        } else if (user.getUsername().length() < 3 || user.getUsername().length() > 20) {
+        }
+        if (dto.getConfirmPassword() == null || dto.getConfirmPassword().trim().isEmpty()) {
+            throw new BusinessException("请再次输入密码");
+        }
+        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+            throw new BusinessException("两次输入的密码不一致");
+        }
+        if (dto.getUsername().length() < 3 || dto.getUsername().length() > 20) {
             throw new BusinessException("用户名长度应为 3-20 位");
-        } else if (user.getPassword().length() < 6 || user.getPassword().length() > 20) {
+        }
+        if (dto.getPassword().length() < 6 || dto.getPassword().length() > 20) {
             throw new BusinessException("密码长度应为 6-20 位");
         }
-        //用户名不存在，注册用户
-        //对密码进行哈希加密
+        if (userMapper.selectByUsername(dto.getUsername()) != null) {
+            throw new BusinessException("用户名已存在");
+        }
+
+        //3.组装 User 并加密
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setPassword(dto.getPassword());
+        user.setNickname(dto.getNickname());
+        user.setAvatarUrl(dto.getAvatarUrl());
+        user.setGender(dto.getGender());
         user.setPassword(hashEcode.hashPassword(user));
         user.setCreatedAt(LocalDateTime.now());
         userMapper.insertUser(user);
@@ -130,5 +190,51 @@ public class UserServiceImp implements UserService {
         }
 
         userMapper.updateUser(user);
+    }
+
+    //修改密码
+    @Override
+    public void changePassword(Integer userId, ChangePasswordDto dto) {
+        if (userId == null) {
+            throw new BusinessException("用户ID不能为空");
+        }
+        if (dto.getOldPassword() == null || dto.getOldPassword().trim().isEmpty()) {
+            throw new BusinessException("原密码不能为空");
+        }
+        if (dto.getNewPassword() == null || dto.getNewPassword().trim().isEmpty()) {
+            throw new BusinessException("新密码不能为空");
+        }
+        if (dto.getConfirmPassword() == null || dto.getConfirmPassword().trim().isEmpty()) {
+            throw new BusinessException("请再次输入新密码");
+        }
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            throw new BusinessException("两次输入的新密码不一致");
+        }
+        if (dto.getNewPassword().length() < 6 || dto.getNewPassword().length() > 20) {
+            throw new BusinessException("新密码长度应为 6-20 位");
+        }
+        if (dto.getNewPassword().equals(dto.getOldPassword())) {
+            throw new BusinessException("新密码不能与原密码相同");
+        }
+
+        User user = userMapper.selectByIdWithPassword(userId);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+
+        if (!hashEcode.passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
+            throw new BusinessException("原密码错误");
+        }
+
+        //用新密码重新哈希
+        User tmp = new User();
+        tmp.setUsername(user.getUsername());
+        tmp.setPassword(dto.getNewPassword());
+        String newHash = hashEcode.hashPassword(tmp);
+
+        userMapper.updatePassword(userId, newHash);
+
+        //清理登录缓存，防止旧哈希残留
+        stringRedisTemplate.delete("cache:user:" + user.getUsername());
     }
 }
