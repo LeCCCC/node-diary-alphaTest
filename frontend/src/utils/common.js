@@ -1,0 +1,100 @@
+import dayjs from 'dayjs';
+import { DEFAULT_AVATAR } from './constants';
+
+const baseUrl = import.meta.env.VITE_API_BASE_TARGET || window.location.origin;
+
+export function normalizeDateValue(value) {
+  if (!value && value !== 0) return null;
+
+  if (Array.isArray(value)) {
+    const [year, month = 1, day = 1, hour = 0, minute = 0, second = 0] = value;
+    if (!year) return null;
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`;
+  }
+
+  if (typeof value === 'object') {
+    const year = value.year ?? value.years;
+    const month = value.monthValue ?? value.month ?? 1;
+    const day = value.dayOfMonth ?? value.day ?? 1;
+    const hour = value.hour ?? 0;
+    const minute = value.minute ?? 0;
+    const second = value.second ?? 0;
+    if (year) {
+      return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`;
+    }
+  }
+
+  return value;
+}
+
+export function pickDate(...values) {
+  for (const value of values) {
+    const normalized = normalizeDateValue(value);
+    if (normalized) return normalized;
+  }
+  return null;
+}
+
+export function formatTime(time, pattern = 'YYYY-MM-DD HH:mm:ss') {
+  const normalized = normalizeDateValue(time);
+  return normalized ? dayjs(normalized).format(pattern) : '-';
+}
+
+export function withBaseUrl(url) {
+  if (!url) return '';
+  if (/^https?:\/\//.test(url)) return url;
+  return `${baseUrl}${url}`;
+}
+
+export function getAvatar(url) {
+  return url ? withBaseUrl(url) : DEFAULT_AVATAR;
+}
+
+export function visibilityText(value) {
+  if (value === null || typeof value === 'undefined' || value === '') return '仅自己可见';
+  const normalized = String(value).trim().toLowerCase();
+  if (['0', 'self', 'private', 'only_self', 'onlyself'].includes(normalized)) return '仅自己可见';
+  return '匹配对象可见';
+}
+
+export function stripHtml(html = '') {
+  return html.replace(/<[^>]+>/g, '').trim();
+}
+
+export function resolveField(source, fields = []) {
+  if (!source) return null;
+  for (const field of fields) {
+    const value = source?.[field];
+    if (value !== null && typeof value !== 'undefined' && value !== '') {
+      return value;
+    }
+  }
+  return null;
+}
+
+export function extractId(source, fields = ['id']) {
+  return resolveField(source, fields);
+}
+
+export function getUserId(userInfo) {
+  return resolveField(userInfo, ['id', 'userId', 'user_id', 'uid']);
+}
+
+export function getTextSummary(content = '', maxLength = 110) {
+  const plain = stripHtml(String(content || '')).replace(/\s+/g, ' ').trim();
+  if (!plain) return '';
+  if (plain.length <= maxLength) return plain;
+  return `${plain.slice(0, maxLength)}…`;
+}
+
+export function normalizeListData(data) {
+  if (Array.isArray(data)) return data;
+  if (!data || typeof data !== 'object') return [];
+  return data.records || data.list || data.items || data.content || [];
+}
+
+export function normalizeTotal(data, fallback = 0) {
+  if (typeof data === 'number') return data;
+  if (!data || typeof data !== 'object') return fallback;
+  return Number(data.total ?? data.count ?? data.totalCount ?? fallback) || 0;
+}
