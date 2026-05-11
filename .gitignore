@@ -34,3 +34,12 @@ build/
 *.yml
 # 或者指定具体文件
 src/main/resources/application.yml
+
+# local backend config
+src/main/resources/application.yml
+src/main/resources/application-dev.yml
+src/main/resources/application-prod.yml
+
+# Claude / gstack generated files
+frontend/.gstack/browse-audit.json
+frontend/.gstack/
