@@ -3,9 +3,9 @@
     <div class="card-header">
       <div class="title-row">
         <h3 class="title">{{ diary.title }}</h3>
-        <el-tag v-if="isMatchedDiary" type="info" effect="dark" size="small">匹配对象日记</el-tag>
+        <el-tag v-if="isMatchedDiary" size="small" class="vis-tag vis-matched">匹配对象日记</el-tag>
       </div>
-      <el-tag v-if="shouldShowVisibility" size="small" class="vis-tag">{{ visibilityLabel }}</el-tag>
+      <el-tag v-if="shouldShowVisibility" size="small" class="vis-tag" :class="`vis-${visType}`">{{ visibilityLabel }}</el-tag>
     </div>
 
     <div class="card-body">
@@ -32,7 +32,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { formatTime, pickDate, visibilityText, withBaseUrl } from '@/utils/common';
+import { formatTime, pickDate, diaryVisibilityLabel, withBaseUrl } from '@/utils/common';
 
 const props = defineProps({
   diary: { type: Object, required: true }
@@ -49,7 +49,9 @@ const shouldShowVisibility = computed(() => isSelfDiary.value && props.diary?.vi
 const canEdit = computed(() => isSelfDiary.value);
 const cardClass = computed(() => ({ 'matched-card': isMatchedDiary.value }));
 const createdTime = computed(() => formatTime(pickDate(props.diary?.createdAt, props.diary?.createAt, props.diary?.createTime, props.diary?.created_time)));
-const visibilityLabel = computed(() => visibilityText(props.diary?.visibility));
+const visInfo = computed(() => diaryVisibilityLabel(props.diary));
+const visibilityLabel = computed(() => visInfo.value.label);
+const visType = computed(() => visInfo.value.type);
 </script>
 
 <style scoped lang="scss">
@@ -101,6 +103,26 @@ const visibilityLabel = computed(() => visibilityText(props.diary?.visibility));
 
 .vis-tag {
   flex-shrink: 0;
+  font-weight: 500;
+  border-radius: 8px;
+}
+
+.vis-private {
+  background: #f5f3ef;
+  border-color: #e8e0d4;
+  color: #9a8f84;
+}
+
+.vis-shared {
+  background: var(--amber-light);
+  border-color: var(--amber);
+  color: var(--amber-deep);
+}
+
+.vis-matched {
+  background: var(--sage-light);
+  border-color: var(--sage);
+  color: var(--sage-deep);
 }
 
 .card-body {

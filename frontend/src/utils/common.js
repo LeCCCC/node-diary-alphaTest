@@ -57,6 +57,25 @@ export function visibilityText(value) {
   return '匹配对象可见';
 }
 
+export function diaryVisibilityLabel(diary, currentUserId) {
+  // 列表接口有 authorType 字段直接判断
+  const authorType = String(diary?.authorType || '').toUpperCase();
+  if (authorType === 'MATCHED' || authorType === 'MATCH' || authorType === 'OTHER') {
+    return { label: '匹配对象日记', type: 'matched' };
+  }
+  // 详情接口无 authorType，通过 userId 与当前用户比对
+  if (!authorType && currentUserId != null && diary?.userId != null) {
+    if (String(diary.userId) !== String(currentUserId)) {
+      return { label: '匹配对象日记', type: 'matched' };
+    }
+  }
+  const v = diary?.visibility;
+  if (v === 0 || v === '0' || v === null || typeof v === 'undefined' || v === '') {
+    return { label: '仅自己可见', type: 'private' };
+  }
+  return { label: '匹配对象可见', type: 'shared' };
+}
+
 export function stripHtml(html = '') {
   return html.replace(/<[^>]+>/g, '').trim();
 }

@@ -28,6 +28,20 @@ public class AliOSSUtils {
         String bucketName = aliProperties.getBucketName();
         String accessKeyId = aliProperties.getAccessKeyId();
         String accessKeySecret = aliProperties.getAccessKeySecret();
+
+        if (endpoint == null || endpoint.isBlank()) {
+            throw new IllegalStateException("OSS 配置缺失：aliyun.oss.endpoint 未设置，请检查 application.yml");
+        }
+        if (accessKeyId == null || accessKeyId.isBlank()) {
+            throw new IllegalStateException("OSS 配置缺失：aliyun.oss.accessKeyId 未设置，请检查 application.yml");
+        }
+        if (accessKeySecret == null || accessKeySecret.isBlank()) {
+            throw new IllegalStateException("OSS 配置缺失：aliyun.oss.accessKeySecret 未设置，请检查 application.yml");
+        }
+        if (bucketName == null || bucketName.isBlank()) {
+            throw new IllegalStateException("OSS 配置缺失：aliyun.oss.bucketName 未设置，请检查 application.yml");
+        }
+
         InputStream inputStream = file.getInputStream();
 
         //获取源文件名称

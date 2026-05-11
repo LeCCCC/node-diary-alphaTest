@@ -122,9 +122,10 @@ async function handleLogout() {
 
 <style scoped lang="scss">
 .app-shell {
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
+  overflow: hidden;
 }
 
 /* ---- Sidebar ---- */
@@ -247,6 +248,7 @@ async function handleLogout() {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  overflow: hidden;
 }
 
 /* ---- Topbar ---- */
@@ -258,8 +260,6 @@ async function handleLogout() {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  position: sticky;
-  top: 0;
   z-index: 20;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -309,6 +309,8 @@ async function handleLogout() {
 .content-area {
   padding: 24px 28px;
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .content-fade-up-enter-active,

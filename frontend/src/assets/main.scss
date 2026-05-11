@@ -35,13 +35,13 @@
   --text-muted: #9a8f84;
 
   /* Element Plus overrides */
-  --el-color-primary: #3a5a6e;
-  --el-color-primary-light-3: #5a7a8e;
-  --el-color-primary-light-5: #7a9aae;
-  --el-color-primary-light-7: #b3c8d4;
-  --el-color-primary-light-8: #d4e0e8;
-  --el-color-primary-light-9: #eaf0f4;
-  --el-color-primary-dark-2: #2c4a5e;
+  --el-color-primary: #7a9a7e;
+  --el-color-primary-light-3: #9db89f;
+  --el-color-primary-light-5: #bfd0bb;
+  --el-color-primary-light-7: #d7e4d3;
+  --el-color-primary-light-8: #e1ebdd;
+  --el-color-primary-light-9: #e8f0e4;
+  --el-color-primary-dark-2: #5a7a5e;
   --el-color-success: #6a9a6e;
   --el-color-warning: #c4954a;
   --el-color-danger: #c46a5a;
@@ -195,14 +195,27 @@ img {
   padding: 20px 24px !important;
 }
 
-.el-button {
+/* ---- Element Plus Button Theme Overrides ---- */
+.el-button,
+.el-button--default,
+.el-button.el-button--default {
   border-radius: var(--radius-sm) !important;
   font-weight: 600 !important;
   letter-spacing: 0.01em;
-  transition: all var(--transition-fast) !important;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast),
+    color var(--transition-fast), background-color var(--transition-fast),
+    border-color var(--transition-fast) !important;
+
+  --el-button-hover-text-color: var(--sage-deep) !important;
+  --el-button-hover-border-color: var(--sage) !important;
+  --el-button-hover-bg-color: var(--sage-light) !important;
+  --el-button-active-text-color: var(--sage-deep) !important;
+  --el-button-active-border-color: var(--sage-deep) !important;
+  --el-button-active-bg-color: #d7e4d3 !important;
 }
 
-.el-button:hover {
+.el-button:hover,
+.el-button:focus {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(44, 58, 79, 0.1);
 }
@@ -211,18 +224,92 @@ img {
   transform: translateY(0) scale(0.98) !important;
 }
 
-.el-button--primary {
-  --el-button-bg-color: #4a5b6e !important;
-  --el-button-border-color: #4a5b6e !important;
-  --el-button-hover-bg-color: #5a6b7e !important;
-  --el-button-hover-border-color: #5a6b7e !important;
+/* default 普通按钮 */
+.el-button--default:hover,
+.el-button--default:focus,
+.el-button.el-button--default:hover,
+.el-button.el-button--default:focus {
+  color: var(--sage-deep) !important;
+  border-color: var(--sage) !important;
+  background-color: var(--sage-light) !important;
 }
 
+/* primary 实心按钮，例如“开始写日记” */
+.el-button--primary,
+.el-button.el-button--primary {
+  --el-button-text-color: #ffffff !important;
+  --el-button-bg-color: var(--sage) !important;
+  --el-button-border-color: var(--sage) !important;
+  --el-button-outline-color: rgba(122, 154, 126, 0.25) !important;
+
+  --el-button-hover-text-color: #ffffff !important;
+  --el-button-hover-bg-color: var(--sage-deep) !important;
+  --el-button-hover-border-color: var(--sage-deep) !important;
+
+  --el-button-active-text-color: #ffffff !important;
+  --el-button-active-bg-color: #4f6b52 !important;
+  --el-button-active-border-color: #4f6b52 !important;
+}
+
+.el-button--primary:hover,
+.el-button--primary:focus,
+.el-button.el-button--primary:hover,
+.el-button.el-button--primary:focus {
+  color: #ffffff !important;
+  background-color: var(--sage-deep) !important;
+  border-color: var(--sage-deep) !important;
+}
+
+/* primary plain 按钮，例如“查看匹配状态” */
+.el-button--primary.is-plain,
+.el-button.el-button--primary.is-plain {
+  --el-button-text-color: var(--sage-deep) !important;
+  --el-button-bg-color: #eef6ea !important;
+  --el-button-border-color: #c8d9c2 !important;
+
+  --el-button-hover-text-color: var(--sage-deep) !important;
+  --el-button-hover-bg-color: var(--sage-light) !important;
+  --el-button-hover-border-color: var(--sage) !important;
+
+  --el-button-active-text-color: #4f6b52 !important;
+  --el-button-active-bg-color: #d7e4d3 !important;
+  --el-button-active-border-color: var(--sage-deep) !important;
+}
+
+.el-button--primary.is-plain:hover,
+.el-button--primary.is-plain:focus,
+.el-button.el-button--primary.is-plain:hover,
+.el-button.el-button--primary.is-plain:focus {
+  color: var(--sage-deep) !important;
+  background-color: var(--sage-light) !important;
+  border-color: var(--sage) !important;
+}
+
+/* link / text 按钮，例如“查看详情” */
 .el-button.is-link,
-.el-button--primary.is-link {
+.el-button.is-text,
+.el-button--primary.is-link,
+.el-button--primary.is-text,
+.el-button.el-button--primary.is-link,
+.el-button.el-button--primary.is-text {
   --el-button-text-color: var(--sage-deep) !important;
   --el-button-hover-text-color: var(--sage) !important;
-  --el-button-active-text-color: var(--sage-deep) !important;
+  --el-button-active-text-color: #4f6b52 !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.el-button.is-link:hover,
+.el-button.is-text:hover,
+.el-button--primary.is-link:hover,
+.el-button--primary.is-text:hover,
+.el-button.el-button--primary.is-link:hover,
+.el-button.el-button--primary.is-text:hover {
+  color: var(--sage) !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
 
 .el-radio__input.is-checked .el-radio__inner {
@@ -320,18 +407,19 @@ img {
 }
 
 /* ---- Card Grid Stagger Animation ---- */
-.card-grid > *:nth-child(1)  { animation-delay: 0.00s !important; }
-.card-grid > *:nth-child(2)  { animation-delay: 0.05s !important; }
-.card-grid > *:nth-child(3)  { animation-delay: 0.10s !important; }
-.card-grid > *:nth-child(4)  { animation-delay: 0.15s !important; }
-.card-grid > *:nth-child(5)  { animation-delay: 0.20s !important; }
-.card-grid > *:nth-child(6)  { animation-delay: 0.25s !important; }
-.card-grid > *:nth-child(7)  { animation-delay: 0.30s !important; }
-.card-grid > *:nth-child(8)  { animation-delay: 0.35s !important; }
-.card-grid > *:nth-child(9)  { animation-delay: 0.40s !important; }
-.card-grid > *:nth-child(10) { animation-delay: 0.45s !important; }
-.card-grid > *:nth-child(11) { animation-delay: 0.50s !important; }
-.card-grid > *:nth-child(12) { animation-delay: 0.55s !important; }
+/* 错峰延迟整体后移 0.28s，确保路由过渡结束后卡片动画才开始 */
+.card-grid > *:nth-child(1)  { animation-delay: 0.28s !important; }
+.card-grid > *:nth-child(2)  { animation-delay: 0.33s !important; }
+.card-grid > *:nth-child(3)  { animation-delay: 0.38s !important; }
+.card-grid > *:nth-child(4)  { animation-delay: 0.43s !important; }
+.card-grid > *:nth-child(5)  { animation-delay: 0.48s !important; }
+.card-grid > *:nth-child(6)  { animation-delay: 0.53s !important; }
+.card-grid > *:nth-child(7)  { animation-delay: 0.58s !important; }
+.card-grid > *:nth-child(8)  { animation-delay: 0.63s !important; }
+.card-grid > *:nth-child(9)  { animation-delay: 0.68s !important; }
+.card-grid > *:nth-child(10) { animation-delay: 0.73s !important; }
+.card-grid > *:nth-child(11) { animation-delay: 0.78s !important; }
+.card-grid > *:nth-child(12) { animation-delay: 0.83s !important; }
 
 /* ---- Route Transitions ---- */
 .route-fade-slide-enter-active,

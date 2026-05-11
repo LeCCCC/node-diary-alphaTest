@@ -16,7 +16,7 @@
 
       <img v-if="detail.coverImage" :src="withBaseUrl(detail.coverImage)" class="cover" alt="cover" />
       <div class="info-bar">
-        <el-tag class="tag">{{ visibilityText(detail.visibility) }}</el-tag>
+        <el-tag class="tag" :class="`tag-${visType}`">{{ visibilityLabel }}</el-tag>
         <span>创建时间：{{ createdTime }}</span>
         <span>更新时间：{{ updatedTime }}</span>
       </div>
@@ -28,10 +28,12 @@
 <script setup>
 import { useRoute } from 'vue-router';
 import { diaryApi } from '@/api/modules';
-import { formatTime, pickDate, visibilityText, withBaseUrl } from '@/utils/common';
+import { formatTime, pickDate, diaryVisibilityLabel, getUserId, withBaseUrl } from '@/utils/common';
 import { sanitizeHtml } from '@/utils/sanitize';
+import { useUserStore } from '@/stores/user';
 
 const route = useRoute();
+const userStore = useUserStore();
 const loading = ref(false);
 const detail = ref(null);
 
@@ -52,6 +54,10 @@ const updatedTime = computed(() => formatTime(pickDate(
   detail.value?.modifiedAt,
   detail.value?.createAt
 )));
+
+const visInfo = computed(() => diaryVisibilityLabel(detail.value, getUserId(userStore.userInfo)));
+const visibilityLabel = computed(() => visInfo.value.label);
+const visType = computed(() => visInfo.value.type);
 
 const normalizedHtml = computed(() => {
   const html = detail.value?.content || '';
@@ -124,9 +130,10 @@ onMounted(loadDetail);
     :deep(.el-button--default) {
       --el-button-text-color: var(--text-secondary);
       --el-button-border-color: var(--border);
-      --el-button-hover-text-color: var(--ink);
-      --el-button-hover-border-color: var(--ink-light);
       --el-button-bg-color: transparent;
+      --el-button-hover-text-color: var(--sage-deep);
+      --el-button-hover-border-color: var(--sage);
+      --el-button-hover-bg-color: var(--sage-light);
       border-radius: var(--radius-sm);
       transition: var(--transition-fast);
     }
@@ -161,46 +168,157 @@ onMounted(loadDetail);
   }
 
   :deep(.el-tag) {
-    background: var(--amber-light);
-    border: 1px solid var(--amber);
-    color: var(--amber);
     border-radius: 8px;
     font-weight: 500;
   }
 
+  :deep(.tag-private) {
+    background: #f5f3ef;
+    border-color: #e8e0d4;
+    color: #9a8f84;
+  }
+
+  :deep(.tag-shared) {
+    background: var(--amber-light);
+    border-color: var(--amber);
+    color: var(--amber-deep);
+  }
+
+  :deep(.tag-matched) {
+    background: var(--sage-light);
+    border-color: var(--sage);
+    color: var(--sage-deep);
+  }
+
   .rich-html {
+    --detail-line-height: 32px;
+    --detail-line-color: rgba(120, 95, 70, 0.34);
+
     color: var(--text);
-    line-height: 1.9;
+    line-height: var(--detail-line-height);
     font-size: 16px;
 
+    /* 段落与列表：基础尺寸 + 整行横线 */
     :deep(p) {
-      margin-bottom: 1em;
+      margin: 0;
+      padding: 0;
+      line-height: var(--detail-line-height);
+      min-height: var(--detail-line-height);
     }
 
-    :deep(img) {
-      max-width: 100%;
-      height: auto;
-      border-radius: var(--radius-sm);
-      display: block;
-      margin: 20px auto;
+    :deep(p:not(.diary-image-line)) {
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent calc(var(--detail-line-height) - 1px),
+        var(--detail-line-color) calc(var(--detail-line-height) - 1px),
+        var(--detail-line-color) var(--detail-line-height)
+      );
+      background-size: 100% var(--detail-line-height);
+      background-position: 0 -6px;
     }
 
-    :deep(blockquote) {
-      border-left: 3px solid var(--border);
-      padding-left: 16px;
-      color: var(--text-secondary);
-      font-style: italic;
-      margin: 16px 0;
+    :deep(li) {
+      margin: 0;
+      padding: 0;
+      line-height: var(--detail-line-height);
+      min-height: var(--detail-line-height);
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent calc(var(--detail-line-height) - 1px),
+        var(--detail-line-color) calc(var(--detail-line-height) - 1px),
+        var(--detail-line-color) var(--detail-line-height)
+      );
+      background-size: 100% var(--detail-line-height);
+      background-position: 0 -6px;
     }
 
+    /* 图片行不画横线，居中展示 */
+    :deep(.diary-image-line),
+    :deep(p:has(> img)) {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 12px 0 !important;
+      padding: 8px 0 !important;
+      line-height: 0 !important;
+      min-height: 0 !important;
+      background-image: none !important;
+    }
+
+    :deep(img),
+    :deep(p img),
+    :deep(.diary-inline-image) {
+      display: block !important;
+      max-width: min(100%, 520px) !important;
+      max-height: 360px !important;
+      width: auto !important;
+      height: auto !important;
+      object-fit: unset !important;
+      border-radius: 12px !important;
+      margin: 0 auto !important;
+      box-shadow: 0 8px 24px -8px rgba(44, 58, 79, 0.18) !important;
+    }
+
+    /* 分割线 */
+    :deep(hr.diary-divider) {
+      border: 0;
+      height: 32px;
+      margin: 0 auto;
+      background-image:
+        radial-gradient(circle, var(--amber) 1px, transparent 1.2px),
+        radial-gradient(circle, var(--amber) 1px, transparent 1.2px),
+        radial-gradient(circle, var(--amber) 1px, transparent 1.2px);
+      background-size: 8px 16px;
+      background-position: calc(50% - 20px) 50%, 50% 50%, calc(50% + 20px) 50%;
+      background-repeat: no-repeat;
+      opacity: 0.55;
+    }
+
+    /* 标题不加横线 */
     :deep(h1),
-    :deep(h2),
+    :deep(h2) {
+      font-family: var(--font-display);
+      color: var(--ink);
+      letter-spacing: 0.02em;
+      margin: 0;
+      padding: 0;
+      background-image: none;
+    }
+
+    :deep(h1) {
+      font-size: 26px;
+      line-height: 64px;
+      min-height: 64px;
+    }
+
+    :deep(h2) {
+      font-size: 22px;
+      line-height: 32px;
+      min-height: 32px;
+    }
+
     :deep(h3),
     :deep(h4) {
       font-family: var(--font-display);
       color: var(--ink);
-      margin-top: 1.5em;
-      margin-bottom: 0.5em;
+      margin: 0;
+      padding: 0;
+      background-image: none;
+    }
+
+    :deep(blockquote) {
+      position: relative;
+      margin: 0;
+      padding: 0 18px 0 22px;
+      border-left: 3px solid var(--sage);
+      background: linear-gradient(90deg, rgba(122, 154, 126, 0.08), transparent 70%);
+      color: var(--text-secondary);
+      border-radius: 0 10px 10px 0;
+      font-style: italic;
+      line-height: var(--detail-line-height);
+      min-height: var(--detail-line-height);
     }
 
     :deep(a) {
@@ -216,11 +334,6 @@ onMounted(loadDetail);
     :deep(ul),
     :deep(ol) {
       padding-left: 1.5em;
-      margin-bottom: 1em;
-    }
-
-    :deep(li) {
-      margin-bottom: 0.3em;
     }
   }
 }
@@ -243,6 +356,45 @@ onMounted(loadDetail);
 
       :deep(.el-button) {
         width: 100%;
+      }
+    }
+
+    .rich-html {
+      --detail-line-height: 30px;
+      --detail-line-color: rgba(120, 95, 70, 0.32);
+      font-size: 15px;
+
+      :deep(p:not(.diary-image-line)) {
+        background-position: 0 -5px;
+      }
+      :deep(li) {
+        background-position: 0 -5px;
+      }
+      :deep(img),
+      :deep(p img),
+      :deep(.diary-inline-image) {
+        max-width: 100% !important;
+        max-height: 270px !important;
+      }
+      :deep(.diary-image-line),
+      :deep(p:has(> img)) {
+        margin: 10px 0 !important;
+        padding: 6px 0 !important;
+      }
+      :deep(h1) {
+        line-height: 60px;
+        min-height: 60px;
+      }
+      :deep(h2) {
+        line-height: 30px;
+        min-height: 30px;
+      }
+      :deep(blockquote) {
+        line-height: 30px;
+        min-height: 30px;
+      }
+      :deep(hr.diary-divider) {
+        height: 30px;
       }
     }
   }

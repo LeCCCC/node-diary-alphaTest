@@ -1,74 +1,125 @@
 <template>
-  <el-card v-loading="loading">
-    <template #header>
-      <div class="section-head">
-        <span>{{ isEdit ? '编辑日记' : '写日记' }}</span>
-        <el-button @click="$router.push('/diaries')">返回列表</el-button>
+  <div class="diary-form" v-loading="loading">
+    <header class="form-head">
+      <div class="head-left">
+        <span class="eyebrow">{{ isEdit ? 'REVISING' : 'TODAY' }}</span>
+        <h1 class="head-title">{{ isEdit ? '编辑日记' : '写一页日记' }}</h1>
+        <p class="head-sub">静下来，把今天写下来。</p>
       </div>
-    </template>
+      <div class="head-right">
+        <el-button link @click="$router.push('/diaries')">
+          <span class="back-arrow">←</span>&nbsp;返回列表
+        </el-button>
+      </div>
+    </header>
 
-    <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
-      <el-form-item label="标题" prop="title">
-        <el-input v-model="form.title" placeholder="请输入标题" maxlength="50" show-word-limit />
+    <el-form ref="formRef" :model="form" :rules="rules" class="diary-form-body">
+      <!-- 标题 -->
+      <el-form-item prop="title" class="title-item">
+        <el-input
+          v-model="form.title"
+          placeholder="给今天起一个标题"
+          maxlength="50"
+          show-word-limit
+          class="title-input"
+        />
       </el-form-item>
 
-      <el-form-item label="封面图">
-        <div class="upload-line">
+      <!-- Meta 行：封面 + 可见性 -->
+      <div class="meta-row">
+        <div class="meta-item cover">
+          <span class="meta-label">封面</span>
           <el-upload :show-file-list="false" :http-request="handleUploadCover" accept="image/*">
-            <el-button>上传封面</el-button>
+            <div class="cover-slot" :class="{ 'has-image': !!form.coverImage }">
+              <img v-if="form.coverImage" :src="withBaseUrl(form.coverImage)" alt="cover" />
+              <div v-else class="cover-plus">
+                <span>+</span>
+                <small>添加封面</small>
+              </div>
+            </div>
           </el-upload>
-          <img v-if="form.coverImage" :src="withBaseUrl(form.coverImage)" class="cover-preview" alt="cover" />
+          <el-button
+            v-if="form.coverImage"
+            link
+            class="cover-remove"
+            @click="form.coverImage = ''"
+          >移除</el-button>
         </div>
+
+        <div class="meta-item visibility">
+          <span class="meta-label">可见性</span>
+          <div class="vis-group">
+            <button
+              type="button"
+              class="vis-btn"
+              :class="{ active: form.visibility === 0 }"
+              @click="form.visibility = 0"
+            >
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="10" width="16" height="10" rx="2" />
+                <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+              </svg>
+              仅自己
+            </button>
+            <button
+              type="button"
+              class="vis-btn"
+              :class="{ active: form.visibility === 1 }"
+              @click="form.visibility = 1"
+            >
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3v4" />
+                <circle cx="12" cy="12" r="3" />
+                <path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+              </svg>
+              匹配对象
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 正文编辑器 -->
+      <el-form-item prop="content" class="editor-item">
+        <DiaryEditor
+          v-model="form.content"
+          :upload-image="handleUploadInlineImage"
+          :saved-at="lastSavedAt"
+          class="diary-editor-host"
+        />
       </el-form-item>
 
-      <el-form-item label="可见性" prop="visibility">
-        <el-radio-group v-model="form.visibility">
-          <el-radio :value="0">仅自己可见</el-radio>
-          <el-radio :value="1">匹配对象可见</el-radio>
-        </el-radio-group>
-      </el-form-item>
-
-      <el-form-item label="正文" prop="content">
-        <div class="editor-tip">点击下方大编辑区即可开始输入，支持插入图片。</div>
-        <div class="editor-actions">
-          <el-upload :show-file-list="false" :http-request="handleInsertImage" accept="image/*">
-            <el-button>上传正文图片</el-button>
-          </el-upload>
-        </div>
-        <div class="editor-shell">
-          <QuillEditor
-            ref="editorRef"
-            v-model:content="form.content"
-            content-type="html"
-            theme="snow"
-            toolbar="full"
-            placeholder="从这里开始写今天的故事……"
-            class="editor"
-          />
-        </div>
-      </el-form-item>
-
-      <el-form-item>
-        <el-button type="primary" :loading="submitting" @click="handleSubmit">{{ isEdit ? '保存修改' : '发布日记' }}</el-button>
-      </el-form-item>
+      <!-- 操作区 -->
+      <div class="actions">
+        <el-button class="btn-cancel" @click="$router.push('/diaries')">取消</el-button>
+        <el-button
+          type="primary"
+          class="btn-publish"
+          :loading="submitting"
+          @click="handleSubmit"
+        >
+          {{ isEdit ? '保存修改' : '发布日记' }}
+        </el-button>
+      </div>
     </el-form>
-  </el-card>
+  </div>
 </template>
 
 <script setup>
 import { ElMessage } from 'element-plus';
-import { QuillEditor } from '@vueup/vue-quill';
 import { useRoute, useRouter } from 'vue-router';
 import { diaryApi, uploadApi } from '@/api/modules';
 import { withBaseUrl } from '@/utils/common';
 import { sanitizeHtml } from '@/utils/sanitize';
+import DiaryEditor from '@/components/DiaryEditor.vue';
 
 const route = useRoute();
 const router = useRouter();
 const formRef = ref();
-const editorRef = ref();
 const loading = ref(false);
 const submitting = ref(false);
+const lastSavedAt = ref(null);
 
 const isEdit = computed(() => Boolean(route.params.id));
 
@@ -90,29 +141,11 @@ async function handleUploadCover({ file }) {
   ElMessage.success('封面上传成功');
 }
 
-async function handleInsertImage({ file }) {
+async function handleUploadInlineImage(file) {
   const res = await uploadApi.uploadImage(file.raw || file);
   const url = res.data?.url;
-  const quill = editorRef.value?.getQuill();
-  if (quill && url) {
-    const index = quill.getSelection()?.index ?? quill.getLength();
-    quill.insertEmbed(index, 'image', withBaseUrl(url));
-    quill.setSelection(index + 1);
-
-    requestAnimationFrame(() => {
-      const images = quill.root.querySelectorAll('img');
-      const currentImage = images[images.length - 1];
-      if (currentImage) {
-        currentImage.style.maxWidth = '560px';
-        currentImage.style.maxHeight = '420px';
-        currentImage.style.width = 'auto';
-        currentImage.style.height = 'auto';
-        currentImage.style.display = 'block';
-        currentImage.style.margin = '16px auto';
-      }
-    });
-  }
-  ElMessage.success('图片上传成功');
+  if (url) ElMessage.success('图片已插入');
+  return url ? withBaseUrl(url) : '';
 }
 
 async function loadDetail() {
@@ -132,22 +165,35 @@ async function loadDetail() {
 }
 
 async function handleSubmit() {
-  await formRef.value?.validate();
-  submitting.value = true;
-  const payload = {
-    ...form,
-    content: sanitizeHtml(form.content)
-  };
+  if (!formRef.value) {
+    ElMessage.error('表单未就绪，请刷新重试');
+    return;
+  }
   try {
+    await formRef.value.validate();
+  } catch {
+    ElMessage.warning('请检查标题和正文是否填写');
+    return;
+  }
+  submitting.value = true;
+  try {
+    const payload = {
+      ...form,
+      content: sanitizeHtml(form.content)
+    };
     if (isEdit.value) {
       await diaryApi.update(route.params.id, payload);
+      lastSavedAt.value = Date.now();
       ElMessage.success('更新成功');
       router.push(`/diaries/${route.params.id}`);
     } else {
       const res = await diaryApi.create(payload);
+      lastSavedAt.value = Date.now();
       ElMessage.success('创建成功');
       router.push(`/diaries/${res.data?.id}`);
     }
+  } catch {
+    // 错误已在 request 拦截器中统一提示
   } finally {
     submitting.value = false;
   }
@@ -157,264 +203,294 @@ onMounted(loadDetail);
 </script>
 
 <style scoped lang="scss">
-.section-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.diary-form {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 8px 4px 40px;
 }
 
-.section-head > span {
+/* ---- Head ---- */
+.form-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 4px 22px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 22px;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.35em;
+  color: var(--amber-deep);
+  opacity: 0.82;
+  margin-bottom: 4px;
+}
+
+.head-title {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 34px;
+  line-height: 1.2;
   color: var(--ink);
+  margin: 0;
   letter-spacing: 0.02em;
 }
 
-/* Root card - Ink & Paper Journal design */
-:deep(.el-card) {
-  background: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-}
-
-:deep(.el-card__header) {
-  border-bottom: 1px solid var(--border-light);
-  padding: 20px 24px;
-}
-
-:deep(.el-card__body) {
-  padding: 24px;
-}
-
-/* Buttons */
-:deep(.el-button--primary) {
-  --el-button-bg-color: var(--sage);
-  --el-button-border-color: var(--sage);
-  --el-button-hover-bg-color: var(--sage-deep);
-  --el-button-hover-border-color: var(--sage-deep);
-  --el-button-active-bg-color: var(--sage-deep);
-  --el-button-active-border-color: var(--sage-deep);
-  border-radius: var(--radius-sm);
-  font-weight: 500;
-  transition: var(--transition-fast);
-}
-
-:deep(.el-button--primary.is-plain) {
-  --el-button-plain-bg-color: transparent;
-  --el-button-border-color: var(--sage);
-  --el-button-plain-text-color: var(--sage);
-  --el-button-hover-text-color: var(--sage-deep);
-  --el-button-hover-border-color: var(--sage-deep);
-  --el-button-hover-bg-color: var(--sage-light);
-  --el-button-active-bg-color: var(--sage-light);
-  border-radius: var(--radius-sm);
-  transition: var(--transition-fast);
-}
-
-:deep(.el-button--default) {
-  --el-button-text-color: var(--text-secondary);
-  --el-button-border-color: var(--border);
-  --el-button-hover-text-color: var(--ink);
-  --el-button-hover-border-color: var(--ink-light);
-  --el-button-bg-color: transparent;
-  border-radius: var(--radius-sm);
-  transition: var(--transition-fast);
-}
-
-/* Form items */
-:deep(.el-form-item__label) {
-  color: var(--text);
-  font-weight: 600;
-  font-size: 14px;
-  padding-bottom: 6px;
-}
-
-/* Input fields */
-:deep(.el-input) {
-  --el-input-border-color: var(--border);
-  --el-input-hover-border-color: var(--sage);
-  --el-input-focus-border-color: var(--sage);
-  --el-input-text-color: var(--text);
-  --el-input-placeholder-color: var(--text-muted);
-  --el-input-bg-color: var(--bg-card);
-  --el-input-border-radius: var(--radius-sm);
-}
-
-:deep(.el-input__wrapper) {
-  box-shadow: 0 0 0 1px var(--border) inset;
-  border-radius: var(--radius-sm);
-  transition: var(--transition-fast);
-}
-
-:deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px var(--sage) inset;
-}
-
-:deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px var(--sage) inset;
-}
-
-:deep(.el-input .el-input__count) {
+.head-sub {
+  margin: 6px 0 0;
   color: var(--text-muted);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.back-arrow {
+  display: inline-block;
+  transform: translateY(-1px);
+}
+
+/* ---- Form body ---- */
+.diary-form-body {
+  display: block;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 20px;
+}
+
+:deep(.el-form-item__error) {
+  padding-top: 4px;
+  color: var(--clay);
+}
+
+/* ---- Title input ---- */
+.title-item :deep(.el-form-item__content) { width: 100%; }
+
+.title-input :deep(.el-input__wrapper) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  height: auto;
+}
+
+.title-input :deep(.el-input__wrapper:hover),
+.title-input :deep(.el-input__wrapper.is-focus) {
+  box-shadow: none !important;
+}
+
+.title-input :deep(.el-input__inner) {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1.5;
+  height: 56px;
+  color: var(--ink);
+  letter-spacing: 0.03em;
+  padding: 4px 2px 10px;
+  border-bottom: 1px dashed var(--border);
+  transition: border-color var(--transition-base);
+}
+
+.title-input :deep(.el-input__inner::placeholder) {
+  color: var(--text-muted);
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.title-input :deep(.el-input__inner:focus) {
+  border-bottom-color: var(--sage);
+}
+
+.title-input :deep(.el-input__count) {
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  right: 2px;
+}
+
+/* ---- Meta row ---- */
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 14px 2px 22px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.meta-label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.cover-slot {
+  position: relative;
+  width: 76px;
+  height: 56px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: rgba(255, 253, 248, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.cover-slot:hover {
+  border-color: var(--sage);
+  transform: translateY(-1px);
+}
+
+.cover-slot.has-image {
+  border-style: solid;
+  border-color: var(--border);
+}
+
+.cover-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-plus {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--text-muted);
+}
+
+.cover-plus span {
+  font-size: 18px;
+  line-height: 1;
+  font-family: var(--font-display);
+}
+
+.cover-plus small {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.cover-remove {
+  color: var(--text-muted) !important;
   font-size: 12px;
 }
 
-/* Radio group */
-:deep(.el-radio) {
-  color: var(--text-secondary);
+.cover-remove:hover {
+  color: var(--clay) !important;
 }
 
-:deep(.el-radio.is-checked) {
-  color: var(--ink);
-}
-
-:deep(.el-radio__inner) {
-  border-color: var(--border);
-  background: var(--bg-card);
-}
-
-:deep(.el-radio.is-checked .el-radio__inner) {
-  border-color: var(--sage);
-  background: var(--sage);
-}
-
-:deep(.el-radio__input.is-checked + .el-radio__label) {
-  color: var(--ink);
-}
-
-.upload-line {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.cover-preview {
-  width: 160px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
+.vis-group {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: rgba(245, 239, 228, 0.6);
   border: 1px solid var(--border-light);
+  gap: 2px;
 }
 
-.editor-tip {
-  margin-bottom: 10px;
-  color: var(--text-muted);
-  font-size: 14px;
-}
-
-.editor-actions {
-  margin-bottom: 12px;
-}
-
-.editor-shell {
-  width: 100%;
-}
-
-.editor {
-  width: 100%;
-  max-width: 100%;
-  border: 2px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
-  box-shadow: var(--shadow-card);
-}
-
-.editor:focus-within {
-  border-color: var(--sage);
-  box-shadow: 0 0 0 4px rgba(122, 154, 126, 0.12);
-}
-
-.editor :deep(.ql-toolbar),
-.editor :deep(.ql-container) {
-  width: 100%;
-}
-
-.editor :deep(.ql-toolbar) {
-  background: #fdfcf8;
-  border-bottom: 1px solid var(--border-light);
-  padding: 10px 16px;
+.vis-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
   font-family: var(--font-body);
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
 
-.editor :deep(.ql-container) {
+.vis-btn:hover { color: var(--ink); }
+
+.vis-btn.active {
   background: var(--bg-card);
-}
-
-.editor :deep(.ql-editor) {
-  min-height: 560px;
-  font-size: 16px;
-  line-height: 2;
-  color: var(--text);
-  font-family: var(--font-body);
-  padding: 28px 32px;
-}
-
-.editor :deep(.ql-editor.ql-blank::before) {
-  color: var(--text-muted);
-  font-style: normal;
-  left: 24px;
-}
-
-.editor :deep(.ql-editor img) {
-  display: block;
-  width: auto;
-  max-width: min(100%, 560px);
-  max-height: 420px;
-  object-fit: contain;
-  margin: 16px auto;
-  border-radius: var(--radius-sm);
-}
-
-/* Quill toolbar icon colors */
-.editor :deep(.ql-formats button) {
-  color: var(--text-secondary);
-  transition: var(--transition-fast);
-}
-
-.editor :deep(.ql-formats button:hover) {
   color: var(--ink);
+  box-shadow: 0 1px 3px rgba(44, 58, 79, 0.08);
 }
 
-.editor :deep(.ql-formats .ql-active) {
-  color: var(--sage);
+.vis-btn.active svg { color: var(--sage-deep); }
+
+/* ---- Editor item ---- */
+.editor-item :deep(.el-form-item__content) { width: 100%; }
+
+.diary-editor-host {
+  width: 100%;
 }
 
-.editor :deep(.ql-picker) {
-  color: var(--text-secondary);
+/* ---- Actions ---- */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 16px 2px 0;
+  border-top: 1px solid var(--border-light);
 }
 
-.editor :deep(.ql-picker:hover) {
-  color: var(--ink);
+.btn-cancel {
+  padding: 10px 22px;
 }
 
-.editor :deep(.ql-picker.ql-expanded) {
-  color: var(--sage);
+.btn-publish {
+  padding: 10px 26px;
+  background: var(--ink) !important;
+  border-color: var(--ink) !important;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
 }
 
+.btn-publish:hover {
+  background: var(--ink-light) !important;
+  border-color: var(--ink-light) !important;
+}
+
+/* ---- Responsive ---- */
 @media (max-width: 768px) {
-  .section-head {
-    gap: 10px;
-  }
+  .diary-form { padding: 4px 2px 28px; }
 
-  .upload-line {
-    align-items: flex-start;
+  .form-head {
     flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
   }
 
-  .cover-preview {
-    width: 100%;
-    max-width: 240px;
-    height: auto;
+  .head-title { font-size: 26px; }
+
+  .title-input :deep(.el-input__inner) {
+    font-size: 22px;
+    line-height: 1.5;
+    height: 44px;
+    padding: 2px 0 8px;
   }
 
-  .editor :deep(.ql-editor) {
-    min-height: 320px;
-    padding: 16px;
+  .meta-row {
+    gap: 16px;
+    padding: 10px 0 16px;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .actions .el-button {
+    flex: 1;
   }
 }
 </style>

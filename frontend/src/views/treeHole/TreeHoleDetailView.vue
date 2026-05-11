@@ -6,7 +6,6 @@
           <div>
             <div class="title-row">
               <span class="page-title">树洞详情</span>
-              <span class="bubble-tag">匿名树洞</span>
               <span v-if="isMine" class="mine-tag">我的发布</span>
             </div>
             <div class="meta-row">发布于 {{ createdTime }} · 最近更新 {{ updatedTime }}</div>
@@ -215,7 +214,6 @@ onMounted(loadDetail);
   color: var(--ink);
 }
 
-.bubble-tag,
 .mine-tag {
   display: inline-flex;
   align-items: center;
@@ -224,11 +222,6 @@ onMounted(loadDetail);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
-}
-
-.bubble-tag {
-  background: var(--slate-light);
-  color: var(--slate);
 }
 
 .mine-tag {

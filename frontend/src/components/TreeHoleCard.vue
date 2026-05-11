@@ -2,7 +2,6 @@
   <article class="tree-hole-card" @click="goDetail">
     <div class="card-top">
       <div class="badge-row">
-        <span class="bubble-tag">匿名树洞</span>
         <span v-if="isMine" class="mine-tag">我的发布</span>
       </div>
       <span class="created-at">{{ createdTime }}</span>
@@ -81,7 +80,6 @@ function goDetail() {
   flex-wrap: wrap;
 }
 
-.bubble-tag,
 .mine-tag {
   display: inline-flex;
   align-items: center;
@@ -91,14 +89,6 @@ function goDetail() {
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.03em;
-}
-
-.bubble-tag {
-  background: var(--slate-light);
-  color: var(--slate);
-}
-
-.mine-tag {
   background: var(--sage-light);
   color: var(--sage-deep);
 }
