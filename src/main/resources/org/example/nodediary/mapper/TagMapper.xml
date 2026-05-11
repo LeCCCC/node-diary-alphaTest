@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.nodediary.mapper.TagMapper">
+
+    <select id="selectAllTags" resultType="org.example.nodediary.pojo.Tag">
+        select id, name, category, sort_order, created_at
+        from tag
+        order by sort_order asc
+    </select>
+
+    <select id="selectUserTagIds" resultType="java.lang.Integer">
+        select tag_id from user_tag where user_id = #{userId}
+    </select>
+
+    <delete id="deleteUserTags">
+        delete from user_tag where user_id = #{userId}
+    </delete>
+
+    <insert id="insertUserTags">
+        insert into user_tag (user_id, tag_id, created_at) values
+        <foreach collection="tagIds" item="tagId" separator=",">
+            (#{userId}, #{tagId}, now())
+        </foreach>
+    </insert>
+
+    <select id="selectTagNamesByIds" resultType="java.lang.String">
+        select name from tag where id in
+        <foreach collection="tagIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+</mapper>

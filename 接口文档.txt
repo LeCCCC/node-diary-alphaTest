@@ -1,0 +1,321 @@
+树洞模块接口文档
+1. 通用约定
+Base URL
+/api
+鉴权
+
+除非你打算树洞广场匿名开放，否则以下接口都建议带登录态：
+
+Authorization: Bearer <token>
+统一响应格式
+
+前端 axios 已经按这个格式在读：
+
+{
+  "code": 200,
+  "message": "success",
+  "data": {}
+}
+
+成功时必须：
+
+code = 200
+
+失败时建议：
+
+code != 200
+message 给出可读错误信息
+2. 数据对象约定
+2.1 TreeHoleVO
+
+用于树洞列表、树洞详情返回。
+
+{
+  "treeHoleId": 1,
+  "publisherId": 10001,
+  "content": "今天真的有点累，但还是想再坚持一下。",
+  "summary": "今天真的有点累，但还是想再坚持一下。",
+  "commentCount": 3,
+  "createTime": "2026-04-12 18:20:00",
+  "updateTime": "2026-04-12 18:40:00"
+}
+
+字段说明：
+
+treeHoleId：树洞 id
+publisherId：发布者 id
+content：树洞全文
+summary：摘要，列表页可直接用；如果不想单独算，也可以直接返回 content
+commentCount：评论数，列表页展示用
+createTime：创建时间
+updateTime：修改时间
+2.2 TreeHoleCommentVO
+
+用于评论列表返回。
+
+{
+  "commentId": 11,
+  "treeHoleId": 1,
+  "content": "抱抱你，明天会更好的。",
+  "createTime": "2026-04-12 18:55:00"
+}
+
+说明：
+
+前端不会展示评论发布者
+所以返回里可以不带 commenterId / nickname / avatar
+这样也更符合“匿名评论”设定
+3. 接口列表
+3.1 获取树洞列表
+请求
+GET /api/tree-holes?pageNum=1&pageSize=10
+Query 参数
+pageNum：页码，默认 1
+pageSize：每页数量，默认 10
+返回示例
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "records": [
+      {
+        "treeHoleId": 1,
+        "publisherId": 10001,
+        "summary": "今天真的有点累，但还是想再坚持一下。",
+        "content": "今天真的有点累，但还是想再坚持一下。",
+        "commentCount": 3,
+        "createTime": "2026-04-12 18:20:00",
+        "updateTime": "2026-04-12 18:40:00"
+      }
+    ],
+    "total": 1,
+    "pageNum": 1,
+    "pageSize": 10
+  }
+}
+说明
+
+前端兼容：
+
+data.records
+data.list
+data.items
+data.content
+
+但你后端最好固定成：
+
+{
+  "records": [],
+  "total": 0
+}
+3.2 发布树洞
+请求
+POST /api/tree-holes
+Content-Type: application/json
+Request Body
+{
+  "content": "最近有点焦虑，但在努力调整。"
+}
+返回示例
+{
+  "code": 200,
+  "message": "发布成功",
+  "data": {
+    "treeHoleId": 2
+  }
+}
+说明
+
+发布者 id 不需要前端传，后端从当前登录用户里取。
+
+3.3 获取树洞详情
+请求
+GET /api/tree-holes/{treeHoleId}
+返回示例
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "treeHoleId": 1,
+    "publisherId": 10001,
+    "content": "今天真的有点累，但还是想再坚持一下。",
+    "commentCount": 3,
+    "createTime": "2026-04-12 18:20:00",
+    "updateTime": "2026-04-12 18:40:00"
+  }
+}
+说明
+
+前端会拿 publisherId 和当前登录用户 id 比较，用来判断是否显示：
+
+编辑按钮
+删除按钮
+
+所以这个字段一定要返回。
+
+3.4 修改树洞
+请求
+PUT /api/tree-holes/{treeHoleId}
+Content-Type: application/json
+Request Body
+{
+  "content": "修改后的树洞内容。"
+}
+返回示例
+{
+  "code": 200,
+  "message": "修改成功",
+  "data": null
+}
+权限要求
+
+只能修改自己发布的树洞。
+
+建议错误
+非本人操作：403
+树洞不存在：404
+3.5 删除树洞
+请求
+DELETE /api/tree-holes/{treeHoleId}
+返回示例
+{
+  "code": 200,
+  "message": "删除成功",
+  "data": null
+}
+权限要求
+
+只能删除自己发布的树洞。
+
+建议行为
+
+删除树洞时，建议同时删除其评论，或者做逻辑删除。
+
+3.6 获取某个树洞的评论列表
+请求
+GET /api/tree-holes/{treeHoleId}/comments?pageNum=1&pageSize=100
+Query 参数
+pageNum：页码，可选
+pageSize：每页数量，可选
+返回示例
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "records": [
+      {
+        "commentId": 11,
+        "treeHoleId": 1,
+        "content": "抱抱你，明天会更好的。",
+        "createTime": "2026-04-12 18:55:00"
+      },
+      {
+        "commentId": 12,
+        "treeHoleId": 1,
+        "content": "你已经很棒了。",
+        "createTime": "2026-04-12 19:02:00"
+      }
+    ],
+    "total": 2,
+    "pageNum": 1,
+    "pageSize": 100
+  }
+}
+说明
+
+前端目前详情页里默认一次拉最多 100 条，所以这版先这样就够。
+
+评论区不展示发布者，所以后端不返回评论用户信息也可以。
+
+3.7 发表评论
+请求
+POST /api/tree-holes/{treeHoleId}/comments
+Content-Type: application/json
+Request Body
+{
+  "content": "抱抱你，明天会更好的。"
+}
+返回示例
+{
+  "code": 200,
+  "message": "评论成功",
+  "data": {
+    "commentId": 11
+  }
+}
+说明
+
+评论发布者 id 后端自己从登录用户中获取。
+
+4. 推荐的请求 DTO
+4.1 发布/修改树洞 DTO
+{
+  "content": "树洞内容"
+}
+
+Java 示例：
+
+public class TreeHoleSaveReq {
+    private String content;
+}
+4.2 发布评论 DTO
+{
+  "content": "评论内容"
+}
+
+Java 示例：
+
+public class TreeHoleCommentCreateReq {
+    private String content;
+}
+5. 推荐的分页返回结构
+
+建议统一成：
+
+{
+  "records": [],
+  "total": 0,
+  "pageNum": 1,
+  "pageSize": 10
+}
+
+这样你后面日记、树洞、评论都能复用。
+
+6. 推荐的后端权限规则
+树洞
+登录用户可发布
+所有人可查看列表和详情
+仅发布者可编辑、删除
+评论
+登录用户可评论
+所有人可查看评论列表
+暂不支持评论编辑 / 删除
+暂不支持子评论
+7. 推荐补充校验
+树洞内容
+必填
+长度 1 ~ 3000
+评论内容
+必填
+长度 1 ~ 1000
+
+SQL:
+CREATE TABLE tree_hole (
+    tree_hole_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '树洞id',
+    publisher_id BIGINT NOT NULL COMMENT '发布者id',
+    content TEXT NOT NULL COMMENT '树洞内容',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='树洞表';
+
+CREATE TABLE tree_hole_comment (
+    comment_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '评论id',
+    tree_hole_id BIGINT NOT NULL COMMENT '树洞id',
+    comment_content TEXT NOT NULL COMMENT '评论内容',
+    commenter_id BIGINT NOT NULL COMMENT '评论发布者id',
+    comment_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '评论发布时间',
+    CONSTRAINT fk_tree_hole_comment_tree_hole
+        FOREIGN KEY (tree_hole_id) REFERENCES tree_hole(tree_hole_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='树洞评论表';
