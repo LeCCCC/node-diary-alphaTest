@@ -16,8 +16,7 @@
 
       <img v-if="detail.coverImage" :src="withBaseUrl(detail.coverImage)" class="cover" alt="cover" />
       <div class="info-bar">
-        <el-tag class="tag" :class="`tag-${visType}`">{{ visibilityLabel }}</el-tag>
-        <span>创建时间：{{ createdTime }}</span>
+        <el-tag class="tag" :class="`tag-${visInfo.type}`">{{ visInfo.label }}</el-tag>        <span>创建时间：{{ createdTime }}</span>
         <span>更新时间：{{ updatedTime }}</span>
       </div>
       <div class="rich-html" v-html="normalizedHtml"></div>
@@ -56,8 +55,6 @@ const updatedTime = computed(() => formatTime(pickDate(
 )));
 
 const visInfo = computed(() => diaryVisibilityLabel(detail.value, getUserId(userStore.userInfo)));
-const visibilityLabel = computed(() => visInfo.value.label);
-const visType = computed(() => visInfo.value.type);
 
 const normalizedHtml = computed(() => {
   const html = detail.value?.content || '';

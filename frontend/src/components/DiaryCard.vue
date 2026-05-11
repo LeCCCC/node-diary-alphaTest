@@ -1,11 +1,11 @@
 <template>
-  <article class="diary-card" :class="cardClass" @click="$router.push(`/diaries/${diary.id}`)">
+  <article class="diary-card" :class="{ 'matched-card': isMatchedDiary }" @click="$router.push(`/diaries/${diary.id}`)">
     <div class="card-header">
       <div class="title-row">
         <h3 class="title">{{ diary.title }}</h3>
         <el-tag v-if="isMatchedDiary" size="small" class="vis-tag vis-matched">匹配对象日记</el-tag>
       </div>
-      <el-tag v-if="shouldShowVisibility" size="small" class="vis-tag" :class="`vis-${visType}`">{{ visibilityLabel }}</el-tag>
+      <el-tag v-if="!isMatchedDiary && diary.visibility !== undefined && diary.visibility !== null" size="small" class="vis-tag" :class="`vis-${visInfo.type}`">{{ visInfo.label }}</el-tag>
     </div>
 
     <div class="card-body">
@@ -17,7 +17,7 @@
       <span class="meta">{{ createdTime }}</span>
       <div class="actions" @click.stop>
         <el-button class="btn-detail" link type="primary" @click="$router.push(`/diaries/${diary.id}`)">详情</el-button>
-        <template v-if="canEdit">
+        <template v-if="!isMatchedDiary">
           <el-button class="btn-edit" link @click="$router.push(`/diaries/${diary.id}/edit`)">编辑</el-button>
           <el-popconfirm title="确定删除这篇日记吗？" @confirm="$emit('delete', diary)">
             <template #reference>
@@ -44,14 +44,8 @@ const isMatchedDiary = computed(() => {
   const t = String(props.diary?.authorType || '').toUpperCase();
   return t === 'MATCHED' || t === 'MATCH' || t === 'OTHER';
 });
-const isSelfDiary = computed(() => !isMatchedDiary.value);
-const shouldShowVisibility = computed(() => isSelfDiary.value && props.diary?.visibility !== undefined && props.diary?.visibility !== null);
-const canEdit = computed(() => isSelfDiary.value);
-const cardClass = computed(() => ({ 'matched-card': isMatchedDiary.value }));
 const createdTime = computed(() => formatTime(pickDate(props.diary?.createdAt, props.diary?.createAt, props.diary?.createTime, props.diary?.created_time)));
 const visInfo = computed(() => diaryVisibilityLabel(props.diary));
-const visibilityLabel = computed(() => visInfo.value.label);
-const visType = computed(() => visInfo.value.type);
 </script>
 
 <style scoped lang="scss">

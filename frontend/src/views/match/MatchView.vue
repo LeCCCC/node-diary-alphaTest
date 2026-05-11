@@ -29,7 +29,7 @@
           <span class="tag-count" :class="{ full: selectedTagIds.length >= 10 }">
             已选 {{ selectedTagIds.length }} / 10
           </span>
-          <el-button type="primary" @click="pickerOpen = true">选择标签</el-button>
+          <el-button type="primary" @click="openPicker">选择标签</el-button>
         </div>
       </div>
 
@@ -185,6 +185,7 @@ const canceling = ref(false);
 const savingTags = ref(false);
 const allTags = ref([]);
 const selectedTagIds = ref([]);
+const savedTagIds = ref([]);
 const pickerOpen = ref(false);
 const searchQuery = ref('');
 const detail = ref({
@@ -272,10 +273,15 @@ async function loadTags() {
   }
 }
 
+function openPicker() {
+  savedTagIds.value = [...selectedTagIds.value];
+  pickerOpen.value = true;
+}
+
 function handleCancelPicker() {
   pickerOpen.value = false;
   searchQuery.value = '';
-  loadTags(); // 恢复已保存的选中状态
+  selectedTagIds.value = [...savedTagIds.value];
 }
 
 async function handleSaveTags() {
