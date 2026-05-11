@@ -10,10 +10,13 @@
         from match_relation
         where user_id = #{userId}
     </select>
-    <!-- 加入匹配队列 -->
-    <insert id="insertMatchRelation" parameterType="java.lang.Integer">
-        insert into match_relation (user_id,status,created_at)
-        values (#{userId},0,now())
+    <!-- 加入匹配队列（仅当不存在同 user_id 记录时才插入） -->
+    <insert id="insertMatchRelation">
+        insert into match_relation (user_id, status, created_at)
+        select #{userId}, 0, now()
+        where not exists (
+            select 1 from match_relation where user_id = #{userId}
+        )
     </insert>
     <!-- 更新匹配关系 -->
     <update id="updateMatchedRelation">
@@ -32,6 +35,14 @@
         order by created_at asc
         limit 2
     </select>
+    <!-- 查询所有待匹配用户（FOR UPDATE 防止并发匹配） -->
+    <select id="selectAllWaitingUsers" resultType="org.example.nodediary.pojo.MatchRelation">
+        select id, user_id, matched_user_id, status, created_at
+        from match_relation
+        where status = 0
+        order by created_at asc
+        for update
+    </select>
     <!-- 根据用户id查询匹配信息 -->
     <select id="selectByUserId" resultType="org.example.nodediary.pojo.MatchRelation">
         select id,
@@ -47,6 +58,13 @@
         select matched_user_id,created_at,status
         from match_relation
         where user_id = #{userId}
+    </select>
+    <!-- 根据用户id查询匹配对象ID（FOR UPDATE 行锁） -->
+    <select id="selectRelationByUserIdForUpdate" resultType="org.example.nodediary.pojo.MatchRelation">
+        select matched_user_id, created_at, status
+        from match_relation
+        where user_id = #{userId}
+        for update
     </select>
         <!-- 根据用户id删除匹配关系 -->
     <delete id="deleteByUserId">

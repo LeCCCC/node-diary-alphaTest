@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -16,5 +17,5 @@ public class MatchDetailVO {
     private String matchedNickname;
     private String avatarUrl;
     private LocalDateTime createdAt;
-
+    private List<String> matchedUserTags;
 }

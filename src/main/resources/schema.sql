@@ -67,3 +67,27 @@ CREATE TABLE `match_relation`  (
 
 SET FOREIGN_KEY_CHECKS = 1;
 
+CREATE TABLE `tag` (
+    `id` INT NOT NULL AUTO_INCREMENT COMMENT '标签ID',
+    `name` VARCHAR(50) NOT NULL COMMENT '标签名称',
+    `category` VARCHAR(50) NOT NULL COMMENT '所属分类',
+    `sort_order` INT NOT NULL DEFAULT 0 COMMENT '排序',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`) USING BTREE,
+    INDEX `idx_category`(`category` ASC) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='兴趣标签表';
+
+CREATE TABLE `user_tag` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
+    `tag_id` INT NOT NULL COMMENT '标签ID',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '选择时间',
+    PRIMARY KEY (`id`) USING BTREE,
+    UNIQUE INDEX `idx_user_tag`(`user_id` ASC, `tag_id` ASC) USING BTREE,
+    INDEX `idx_tag_id`(`tag_id` ASC) USING BTREE,
+    CONSTRAINT `fk_user_tag_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+    CONSTRAINT `fk_user_tag_tag` FOREIGN KEY (`tag_id`) REFERENCES `tag` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户标签关联表';
+
+SET FOREIGN_KEY_CHECKS = 1;
+

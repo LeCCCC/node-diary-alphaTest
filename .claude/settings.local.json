@@ -5,7 +5,10 @@
       "Read(//c/tmp/**)",
       "Bash(unzip -p /c/Users/21147/.m2/repository/cn/hutool/hutool-all/5.7.17/hutool-all-5.7.17.jar cn/hutool/captcha/AbstractCaptcha.class)",
       "Bash(./mvnw.cmd compile *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(mvn compile *)",
+      "Bash(node -e \"try{require.resolve\\('@element-plus/icons-vue'\\);console.log\\('found'\\)}catch\\(e\\){console.log\\('missing'\\)}\")",
+      "Bash(npx vite *)"
     ]
   }
 }

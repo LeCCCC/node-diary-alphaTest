@@ -1,5 +1,11 @@
 <template>
   <div class="auth-page">
+    <div class="auth-light-orbs" aria-hidden="true">
+      <div class="orb orb--sage"></div>
+      <div class="orb orb--amber"></div>
+      <div class="orb orb--clay"></div>
+      <div class="orb orb--mist"></div>
+    </div>
     <div class="auth-bg-dot"></div>
 
     <div class="auth-card">
@@ -79,6 +85,56 @@ async function handleLogin() {
     var(--bg);
 }
 
+.auth-light-orbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  will-change: transform, opacity;
+}
+
+.orb--sage {
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle at 35% 35%, rgba(122, 154, 126, 0.48), rgba(122, 154, 126, 0) 65%);
+  top: -12%;
+  left: -10%;
+  animation: orb-drift-sage 16s ease-in-out infinite, orb-breathe-sage 7s ease-in-out infinite;
+}
+
+.orb--amber {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle at 40% 60%, rgba(196, 149, 74, 0.42), rgba(196, 149, 74, 0) 65%);
+  bottom: -15%;
+  right: -8%;
+  animation: orb-drift-amber 20s ease-in-out infinite, orb-breathe-amber 8s ease-in-out infinite 2s;
+}
+
+.orb--clay {
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle at 50% 40%, rgba(196, 122, 90, 0.35), rgba(196, 122, 90, 0) 65%);
+  top: 40%;
+  left: -10%;
+  animation: orb-drift-clay 18s ease-in-out infinite 1s, orb-breathe-clay 6s ease-in-out infinite 4s;
+}
+
+.orb--mist {
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle at 55% 45%, rgba(122, 154, 126, 0.25), rgba(196, 149, 74, 0.15), transparent 65%);
+  top: 25%;
+  right: -15%;
+  animation: orb-drift-mist 22s ease-in-out infinite 3s, orb-breathe-mist 9s ease-in-out infinite 1s;
+}
+
 .auth-bg-dot {
   position: absolute;
   inset: 0;
@@ -86,6 +142,52 @@ async function handleLogin() {
   background-size: 32px 32px;
   opacity: 0.3;
   pointer-events: none;
+}
+
+/* ---- 光晕漂浮动画 ---- */
+@keyframes orb-drift-sage {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%      { transform: translate(60px, 50px) scale(1.12); }
+  50%      { transform: translate(-20px, 80px) scale(0.92); }
+  75%      { transform: translate(-50px, -10px) scale(1.08); }
+}
+
+@keyframes orb-drift-amber {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(-55px, -60px) scale(1.1); }
+  66%      { transform: translate(25px, -45px) scale(0.9); }
+}
+
+@keyframes orb-drift-clay {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(50px, -55px) scale(1.15); }
+}
+
+@keyframes orb-drift-mist {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%      { transform: translate(-70px, -30px) scale(1.06); }
+  50%      { transform: translate(-30px, -70px) scale(0.94); }
+  75%      { transform: translate(40px, -20px) scale(1.1); }
+}
+
+@keyframes orb-breathe-sage {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+@keyframes orb-breathe-amber {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
+
+@keyframes orb-breathe-clay {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+@keyframes orb-breathe-mist {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
 }
 
 .auth-card {

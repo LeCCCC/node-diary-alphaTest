@@ -7,12 +7,10 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.example.nodediary.exception.BusinessException;
+import org.example.nodediary.mapper.TagMapper;
 import org.example.nodediary.mapper.UserMapper;
 
-import org.example.nodediary.pojo.CaptchaVO;
-import org.example.nodediary.pojo.ChangePasswordDto;
-import org.example.nodediary.pojo.RegisterDto;
-import org.example.nodediary.pojo.User;
+import org.example.nodediary.pojo.*;
 
 import org.example.nodediary.service.UserService;
 
@@ -22,6 +20,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -32,6 +31,8 @@ public class UserServiceImp implements UserService {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private TagMapper tagMapper;
     @Autowired
     private HashEcode hashEcode;
     @Autowired
@@ -90,6 +91,9 @@ public class UserServiceImp implements UserService {
         }
         if (dto.getUsername().length() < 3 || dto.getUsername().length() > 20) {
             throw new BusinessException("用户名长度应为 3-20 位");
+        }
+        if (!dto.getUsername().matches("^[a-zA-Z0-9]+$")) {
+            throw new BusinessException("用户名只能包含英文字母和数字");
         }
         if (dto.getPassword().length() < 6 || dto.getPassword().length() > 20) {
             throw new BusinessException("密码长度应为 6-20 位");
@@ -236,5 +240,29 @@ public class UserServiceImp implements UserService {
 
         //清理登录缓存，防止旧哈希残留
         stringRedisTemplate.delete("cache:user:" + user.getUsername());
+    }
+
+    @Override
+    public List<Tag> getAllTags() {
+        return tagMapper.selectAllTags();
+    }
+
+    @Override
+    public List<Integer> getUserTagIds(Integer userId) {
+        return tagMapper.selectUserTagIds(userId);
+    }
+
+    @Override
+    public void saveUserTags(Integer userId, List<Integer> tagIds) {
+        if (tagIds == null) {
+            tagIds = List.of();
+        }
+        if (tagIds.size() > 10) {
+            throw new BusinessException("最多选择10个标签");
+        }
+        tagMapper.deleteUserTags(userId);
+        if (!tagIds.isEmpty()) {
+            tagMapper.insertUserTags(userId, tagIds);
+        }
     }
 }

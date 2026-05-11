@@ -15,17 +15,21 @@ public interface MatchMapper {
     //根据用户id查询是否在匹配队列中
     @Select("select user_id from match_relation where user_id = #{userId}")
     public Integer selectUserId(Integer userId);
-    //加入匹配队列
-    void insertMatchRelation(Integer currentUserId);
+    //加入匹配队列，返回插入行数（0 表示已存在）
+    int insertMatchRelation(Integer currentUserId);
     //更新匹配关系
     int updateMatchedRelation(@Param("userId") Integer userId,
                               @Param("matchedUserId") Integer matchedUserId);
     //查询最早进入队列的两个待匹配用户
     List<MatchRelation> selectTop2WaitingUsers();
+    //查询所有待匹配用户
+    List<MatchRelation> selectAllWaitingUsers();
     //根据用户id查询匹配详情
     MatchRelation selectByUserId(Integer currentUserId);
     //根据用户id查询匹配对象关系
     MatchRelation selectRelationByUserId(Integer currentUserId);
+    //根据用户id查询匹配对象关系（FOR UPDATE 行锁）
+    MatchRelation selectRelationByUserIdForUpdate(Integer currentUserId);
     int deleteByUserId(Integer currentUserId);
     //根据双方用户id删除一条精确匹配关系
     int deleteMatchedRelation(@Param("userId") Integer userId,

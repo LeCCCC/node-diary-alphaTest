@@ -1,7 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/stores/user';
-import { getToken } from '@/utils/auth';
+import { getToken, removeToken, removeUserCache } from '@/utils/auth';
+
+function isTokenExpired(token) {
+  if (!token) return true;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
 
 const router = createRouter({
   history: createWebHistory(),
@@ -100,13 +110,19 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const userStore = useUserStore();
-  const token = getToken();
+  let token = getToken();
+
+  // 清理过期 token，防止残留 JWT 导致 guestOnly 页面被误判为已登录
+  if (token && isTokenExpired(token)) {
+    userStore.clearLogin();
+    token = '';
+  }
 
   if (to.meta.title) {
     document.title = `${to.meta.title} - 结日记`;
   }
 
-  // 需要登录，但本地没有 token，直接去登录页
+  // 需要登录，但本地没有有效 token
   if (to.meta.requiresAuth && !token) {
     ElMessage.warning('请先登录');
     return '/login';

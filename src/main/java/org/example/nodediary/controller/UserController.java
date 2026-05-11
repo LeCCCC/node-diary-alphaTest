@@ -4,6 +4,8 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.nodediary.pojo.*;
 
+import java.util.List;
+
 import org.example.nodediary.service.UserService;
 
 import org.example.nodediary.utils.JwtUtils;
@@ -129,6 +131,36 @@ public class UserController {
     @PostMapping("/logout")
     public Result userLogOut() {
         return Result.success("退出成功");
+    }
+
+    //获取所有标签 + 当前用户已选标签
+    @GetMapping("/tags")
+    public Result getTags(HttpServletRequest request) {
+        Claims claims = (Claims) request.getAttribute("claims");
+        if (claims == null) {
+            return Result.error("NOT_LOGIN");
+        }
+        Integer userId = Integer.valueOf(claims.get("id").toString());
+
+        List<Tag> allTags = userService.getAllTags();
+        List<Integer> userTagIds = userService.getUserTagIds(userId);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("tags", allTags);
+        data.put("userTagIds", userTagIds);
+        return Result.success("success", data);
+    }
+
+    //保存用户标签
+    @PutMapping("/tags")
+    public Result saveTags(@RequestBody List<Integer> tagIds, HttpServletRequest request) {
+        Claims claims = (Claims) request.getAttribute("claims");
+        if (claims == null) {
+            return Result.error("NOT_LOGIN");
+        }
+        Integer userId = Integer.valueOf(claims.get("id").toString());
+        userService.saveUserTags(userId, tagIds);
+        return Result.success("保存成功");
     }
 
 }

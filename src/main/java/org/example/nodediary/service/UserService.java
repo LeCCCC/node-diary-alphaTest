@@ -1,9 +1,8 @@
 package org.example.nodediary.service;
 
-import org.example.nodediary.pojo.CaptchaVO;
-import org.example.nodediary.pojo.ChangePasswordDto;
-import org.example.nodediary.pojo.RegisterDto;
-import org.example.nodediary.pojo.User;
+import org.example.nodediary.pojo.*;
+
+import java.util.List;
 
 public interface UserService {
     Integer register(RegisterDto dto);
@@ -17,4 +16,10 @@ public interface UserService {
     CaptchaVO generateCaptcha();
 
     void changePassword(Integer userId, ChangePasswordDto dto);
+
+    List<Tag> getAllTags();
+
+    List<Integer> getUserTagIds(Integer userId);
+
+    void saveUserTags(Integer userId, List<Integer> tagIds);
 }

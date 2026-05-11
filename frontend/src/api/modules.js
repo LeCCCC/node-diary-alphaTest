@@ -97,6 +97,15 @@ export const matchApi = {
   }
 };
 
+export const tagApi = {
+  getTags() {
+    return request.get('/user/tags');
+  },
+  saveUserTags(tagIds) {
+    return request.put('/user/tags', tagIds);
+  }
+};
+
 export const treeHoleApi = {
   getList(params) {
     return request.get('/tree-holes', { params });
