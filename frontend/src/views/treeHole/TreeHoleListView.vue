@@ -262,6 +262,50 @@ onMounted(loadData);
   justify-content: flex-end;
 }
 
+.pagination :deep(.el-pagination) {
+  --el-pagination-button-color: var(--text-secondary);
+  --el-pagination-button-bg-color: transparent;
+  --el-pagination-hover-color: var(--sage);
+  --el-pagination-font-size: 14px;
+  font-weight: 400;
+}
+
+.pagination :deep(.el-pager li) {
+  border-radius: var(--radius-sm);
+  min-width: 34px;
+  height: 34px;
+  line-height: 34px;
+  transition: var(--transition-fast);
+}
+
+.pagination :deep(.el-pager li:hover) {
+  color: var(--sage-deep);
+  background: var(--sage-light);
+}
+
+.pagination :deep(.el-pager li.is-active) {
+  color: #fff;
+  background: var(--sage);
+  font-weight: 600;
+}
+
+.pagination :deep(.el-pagination button:disabled) {
+  color: var(--text-muted);
+  background: transparent;
+}
+
+.pagination :deep(.btn-prev),
+.pagination :deep(.btn-next) {
+  border-radius: var(--radius-sm);
+  min-width: 34px;
+  height: 34px;
+}
+
+.pagination :deep(.el-pagination__total) {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
 @media (max-width: 960px) {
   .hero-wrap {
     flex-direction: column;
@@ -284,6 +328,10 @@ onMounted(loadData);
 
   .toolbar {
     width: 100%;
+  }
+
+  .pagination {
+    justify-content: center;
   }
 }
 </style>

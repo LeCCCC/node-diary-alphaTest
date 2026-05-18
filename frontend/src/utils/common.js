@@ -112,6 +112,49 @@ export function normalizeListData(data) {
   return data.records || data.list || data.items || data.content || [];
 }
 
+async function nativeHeicToJpeg(file) {
+  const url = URL.createObjectURL(file);
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      canvas.toBlob((blob) => {
+        URL.revokeObjectURL(url);
+        if (!blob) { resolve(null); return; }
+        const name = file.name.replace(/\.\w+$/i, '.jpg');
+        resolve(new File([blob], name, { type: 'image/jpeg' }));
+      }, 'image/jpeg', 0.92);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
+export async function ensureBrowserImage(file) {
+  if (!file) return file;
+  const isHeic = /\.(heic|heif)$/i.test(file.name) ||
+    file.type === 'image/heic' || file.type === 'image/heif';
+  if (!isHeic) return file;
+
+  // 先尝试浏览器原生解码（Safari / macOS Chrome）
+  const native = await nativeHeicToJpeg(file);
+  if (native) return native;
+
+  // 原生解码失败，用 heic2any 兜底（所有浏览器通用）
+  try {
+    const { default: heic2any } = await import('heic2any');
+    const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
+    const result = Array.isArray(blob) ? blob[0] : blob;
+    const name = file.name.replace(/\.\w+$/i, '.jpg');
+    return new File([result], name, { type: 'image/jpeg' });
+  } catch {
+    return file;
+  }
+}
+
 export function normalizeTotal(data, fallback = 0) {
   if (typeof data === 'number') return data;
   if (!data || typeof data !== 'object') return fallback;

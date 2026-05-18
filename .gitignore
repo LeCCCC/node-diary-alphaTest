@@ -43,3 +43,4 @@ src/main/resources/application-prod.yml
 # Claude / gstack generated files
 frontend/.gstack/browse-audit.json
 frontend/.gstack/
+.gstack/

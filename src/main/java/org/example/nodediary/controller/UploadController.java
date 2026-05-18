@@ -22,11 +22,13 @@ public class UploadController {
     private static final Set<String> ALLOWED_TYPES = Set.of(
             "image/jpeg",
             "image/png",
-            "image/webp"
+            "image/webp",
+            "image/heic",
+            "image/heif"
     );
     // 允许的后缀
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
-            "jpg", "jpeg", "png", "webp"
+            "jpg", "jpeg", "png", "webp", "heic", "heif"
     );
     // 文件大小限制：10MB
     private static final long MAX_SIZE = 10 * 1024 * 1024;

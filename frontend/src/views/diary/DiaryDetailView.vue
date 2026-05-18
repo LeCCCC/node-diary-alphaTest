@@ -339,7 +339,7 @@ onMounted(loadDetail);
   .detail-page {
     .header-line {
       flex-direction: column;
-      align-items: flex-start;
+      align-items: stretch;
     }
 
     .title {
@@ -350,9 +350,11 @@ onMounted(loadDetail);
       width: 100%;
       display: grid;
       grid-template-columns: 1fr 1fr;
+      align-items: center;
 
       :deep(.el-button) {
         width: 100%;
+        justify-content: center;
       }
     }
 

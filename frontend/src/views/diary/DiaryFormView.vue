@@ -110,7 +110,7 @@
 import { ElMessage } from 'element-plus';
 import { useRoute, useRouter } from 'vue-router';
 import { diaryApi, uploadApi } from '@/api/modules';
-import { withBaseUrl } from '@/utils/common';
+import { withBaseUrl, ensureBrowserImage } from '@/utils/common';
 import { sanitizeHtml } from '@/utils/sanitize';
 import DiaryEditor from '@/components/DiaryEditor.vue';
 
@@ -136,13 +136,15 @@ const rules = {
 };
 
 async function handleUploadCover({ file }) {
-  const res = await uploadApi.uploadImage(file.raw || file);
+  const safe = await ensureBrowserImage(file.raw || file);
+  const res = await uploadApi.uploadImage(safe);
   form.coverImage = res.data?.url || '';
   ElMessage.success('封面上传成功');
 }
 
 async function handleUploadInlineImage(file) {
-  const res = await uploadApi.uploadImage(file.raw || file);
+  const safe = await ensureBrowserImage(file.raw || file);
+  const res = await uploadApi.uploadImage(safe);
   const url = res.data?.url;
   if (url) ElMessage.success('图片已插入');
   return url ? withBaseUrl(url) : '';
@@ -448,15 +450,15 @@ onMounted(loadDetail);
 
 .btn-publish {
   padding: 10px 26px;
-  background: var(--ink) !important;
-  border-color: var(--ink) !important;
+  background: var(--sage) !important;
+  border-color: var(--sage) !important;
   font-family: var(--font-display);
   letter-spacing: 0.08em;
 }
 
 .btn-publish:hover {
-  background: var(--ink-light) !important;
-  border-color: var(--ink-light) !important;
+  background: var(--sage-deep) !important;
+  border-color: var(--sage-deep) !important;
 }
 
 /* ---- Responsive ---- */
